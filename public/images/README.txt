@@ -1,0 +1,1 @@
+Place your product images (e.g. headset-1.jpg) in this folder. Filenames should match those in the DB seed (e.g. /images/headset-1.jpg).
