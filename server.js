@@ -13,9 +13,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const http = require('http');
 
-// lowdb (pure JS file DB)
-const { Low } = require('lowdb');
-const { JSONFile } = require('lowdb/node');
+// -> lowdb wird jetzt über db-client.js geladen (dynamisch importiert)
+const dbClient = require('./db-client');
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
@@ -32,64 +31,14 @@ function generateId() {
   return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
 }
 
-/* ---------- DB init (lowdb) ---------- */
-async function initDbIfMissing(dbFilePath) {
-  const DATA_DIR = path.dirname(dbFilePath);
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-
-  const adapter = new JSONFile(dbFilePath);
-  const db = new Low(adapter);
-  await db.read();
-  db.data ||= {
-    users: [],
-    products: [],
-    reviews: [],
-    orders: [],
-    messages: []
-  };
-
-  if (!db.data.products || db.data.products.length === 0) {
-    db.data.products = [
-      {
-        id: 'prod-1',
-        title: 'Nebula Headset',
-        category: 'Accessories',
-        price: 79.99,
-        short_desc: 'Wireless gaming headset with spatial audio and nebula lighting.',
-        long_desc: 'Immersive over-ear headset built for long sessions. 50mm drivers, low-latency wireless mode, breathable memory-foam cushions and subtle nebula RGB.',
-        images: ['/images/headset-1.jpg','/images/headset-2.jpg']
-      },
-      {
-        id: 'prod-2',
-        title: 'Void Runner Hoodie',
-        category: 'Apparel',
-        price: 49.99,
-        short_desc: 'Comfort-fit hoodie with glow-in-dark print.',
-        long_desc: 'Premium cotton-blend hoodie featuring reflective galaxy print.',
-        images: ['/images/hoodie-1.jpg']
-      },
-      {
-        id: 'prod-3',
-        title: 'Meteor Grip',
-        category: 'Accessories',
-        price: 12.99,
-        short_desc: 'Tactical phone grip inspired by meteor textures.',
-        long_desc: 'Slim profile grip with anti-slip texture.',
-        images: ['/images/grip-1.jpg']
-      }
-    ];
-    await db.write();
-    console.log('Seeded products to', dbFilePath);
-  }
-
-  return db;
-}
-
 /* ---------- bootstrap (init or run) ---------- */
 (async () => {
   try {
     const isInitOnly = process.argv.includes('--init-db');
-    const db = await initDbIfMissing(DB_FILE);
+
+    // init lowdb via db-client (dynamic import intern)
+    const db = await dbClient.init(DB_FILE);
+
     if (isInitOnly) {
       console.log('DB init complete (init-only).');
       process.exit(0);
