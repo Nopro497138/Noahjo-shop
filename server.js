@@ -1,9 +1,4 @@
-\
-/* server.js - Single-file Express server with DB init, Stripe webhook, and static serving (SPA fallback)
-   Place this file in your project root. The server will auto-create ./data/db.sqlite if missing.
-   Start normally with: node server.js
-   For development: npm run dev (needs nodemon)
-*/
+/* server.js - Express server with DB init, Stripe webhook, static serve + SPA fallback */
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
@@ -133,7 +128,7 @@ function initDbIfMissing(dbFilePath) {
   console.log('DB created and seeded.');
 }
 
-/* support --init-db CLI flag */
+/* support --init-db */
 if (process.argv.includes('--init-db')) {
   initDbIfMissing(DB_FILE);
   console.log('Init finished. Exiting.');
@@ -206,7 +201,7 @@ app.get('*', (req, res, next) => {
   return res.status(404).send('index.html not found on server. Place your frontend in /public');
 });
 
-/* ---------- Helper: signToken, auth middleware, API routes (trimmed for brevity) ---------- */
+/* ---------- Helper functions & minimal API ---------- */
 function signToken(user) {
   const payload = { id: user.id, email: user.email, is_admin: !!user.is_admin };
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
@@ -225,7 +220,7 @@ function authenticate(req, res, next) {
   }
 }
 
-/* ---------- Minimal API routes (full set from before can be added) ---------- */
+/* Minimal API endpoints (you can expand these) */
 app.get('/api/ping', (req, res) => res.json({ ok: true }));
 app.get('/api/products', (req, res) => {
   const rows = db.prepare('SELECT id,title,category,price,short_desc,long_desc,images FROM products').all();
