@@ -1,9 +1,7 @@
-/* server.js - Noahjo shop
-   Low-dependency version (lowdb) to avoid native build errors on Railway.
-   - Auto-inits DB (./data/db.json)
-   - /webhook uses express.raw BEFORE express.json (for Stripe)
-   - Serves static files from ./public and SPA fallback
-   - Socket.IO for realtime chat (same API shape)
+/* server.js - Noahjo shop (no nanoid, uses generateId() instead)
+   - lowdb as file DB to avoid native builds
+   - /webhook uses express.raw BEFORE express.json
+   - serves ./public with SPA fallback
 */
 
 require('dotenv').config();
@@ -14,7 +12,6 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const http = require('http');
-const { nanoid } = require('nanoid');
 
 // lowdb (pure JS file DB)
 const { Low } = require('lowdb');
@@ -29,6 +26,12 @@ const DB_FILE = process.env.DATABASE_FILE || path.join(__dirname, 'data', 'db.js
 let stripe = null;
 if (STRIPE_SECRET_KEY) stripe = require('stripe')(STRIPE_SECRET_KEY);
 
+/* ---------- small safe id generator (no external deps) ---------- */
+function generateId() {
+  // timestamp + random part, URL-safe-ish
+  return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+}
+
 /* ---------- DB init (lowdb) ---------- */
 async function initDbIfMissing(dbFilePath) {
   const DATA_DIR = path.dirname(dbFilePath);
@@ -37,7 +40,6 @@ async function initDbIfMissing(dbFilePath) {
   const adapter = new JSONFile(dbFilePath);
   const db = new Low(adapter);
   await db.read();
-  // default structure
   db.data ||= {
     users: [],
     products: [],
@@ -46,7 +48,6 @@ async function initDbIfMissing(dbFilePath) {
     messages: []
   };
 
-  // seed products if empty
   if (!db.data.products || db.data.products.length === 0) {
     db.data.products = [
       {
@@ -84,7 +85,7 @@ async function initDbIfMissing(dbFilePath) {
   return db;
 }
 
-/* If process arg --init-db, only init and exit (useful locally) */
+/* ---------- bootstrap (init or run) ---------- */
 (async () => {
   try {
     const isInitOnly = process.argv.includes('--init-db');
@@ -98,7 +99,7 @@ async function initDbIfMissing(dbFilePath) {
     const app = express();
     app.use(cors());
 
-    /* Serve webhook raw BEFORE express.json */
+    /* webhook must be raw before express.json */
     app.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
       if (!stripe) return res.status(400).send('Stripe not configured');
       const sig = req.headers['stripe-signature'];
@@ -122,12 +123,11 @@ async function initDbIfMissing(dbFilePath) {
         const currency = session.currency || null;
         const customer_email = session.customer_details ? session.customer_details.email : (session.customer_email || null);
 
-        // read fresh
         await db.read();
         const exists = db.data.orders.find(o => o.stripe_session_id === stripeSessionId);
         if (!exists) {
           const newOrder = {
-            id: nanoid(),
+            id: generateId(),
             stripe_session_id: stripeSessionId,
             user_id: userId,
             user_email: customer_email,
@@ -138,7 +138,6 @@ async function initDbIfMissing(dbFilePath) {
           };
           db.data.orders.push(newOrder);
           await db.write();
-          // emit via socket.io if available (attached later)
           try { if (typeof io !== 'undefined' && io) io.to('admins').emit('order:created', newOrder); } catch(e){}
         }
       }
@@ -149,18 +148,18 @@ async function initDbIfMissing(dbFilePath) {
     /* parse JSON for other routes */
     app.use(express.json());
 
-    /* Serve static frontend */
+    /* static frontend */
     const publicPath = path.join(__dirname, 'public');
     app.use('/images', express.static(path.join(publicPath, 'images')));
     app.use(express.static(publicPath));
 
-    // Helper: signToken
+    /* helper: sign token */
     function signToken(user) {
       const payload = { id: user.id, email: user.email, is_admin: !!user.is_admin };
       return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
     }
 
-    // auth middleware
+    /* auth middleware */
     function authenticate(req, res, next) {
       const auth = req.headers.authorization;
       if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing auth' });
@@ -174,7 +173,7 @@ async function initDbIfMissing(dbFilePath) {
       }
     }
 
-    /* ---------- API routes using lowdb ---------- */
+    /* ---------- API routes (lowdb-backed) ---------- */
 
     // Register
     app.post('/api/auth/register', async (req, res) => {
@@ -204,7 +203,7 @@ async function initDbIfMissing(dbFilePath) {
       res.json({ token, user: { id: row.id, email: row.email, is_admin: !!row.is_admin } });
     });
 
-    // Get products
+    // Products
     app.get('/api/products', async (req, res) => {
       await db.read();
       res.json(db.data.products || []);
@@ -230,7 +229,7 @@ async function initDbIfMissing(dbFilePath) {
       const exist = db.data.reviews.find(r => r.product_id === productId && r.author_id === userId);
       if (exist) return res.status(400).json({ error: 'You already reviewed this product' });
 
-      const newReview = { id: nanoid(), product_id: productId, author_id: userId, author_email: userEmail, rating, text: text || null, created_at: new Date().toISOString() };
+      const newReview = { id: generateId(), product_id: productId, author_id: userId, author_email: userEmail, rating, text: text || null, created_at: new Date().toISOString() };
       db.data.reviews.push(newReview);
       await db.write();
       res.json(newReview);
@@ -262,7 +261,7 @@ async function initDbIfMissing(dbFilePath) {
       res.json({ ok: true });
     });
 
-    // Create checkout session (uses stripe if configured)
+    // Checkout (Stripe)
     app.post('/api/create-checkout-session', authenticate, async (req, res) => {
       if (!stripe) return res.status(500).json({ error: 'Stripe not configured. Set STRIPE_SECRET_KEY in env.' });
       const items = req.body.items;
@@ -375,7 +374,7 @@ async function initDbIfMissing(dbFilePath) {
           if (!order) return cb && cb({ error: 'Order not found' });
           if (order.user_id !== socket.user.id && !socket.user.is_admin) return cb && cb({ error: 'Not authorized' });
           const sender_role = socket.user.is_admin ? 'admin' : 'user';
-          const msg = { id: nanoid(), order_id: orderId, sender_id: socket.user.id, sender_role, text, created_at: new Date().toISOString() };
+          const msg = { id: generateId(), order_id: orderId, sender_id: socket.user.id, sender_role, text, created_at: new Date().toISOString() };
           db.data.messages.push(msg);
           await db.write();
           const room = `order:${orderId}`;
