@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Noahjo Shop — Demo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 24px; max-width: 900px; margin: auto; }
+    h1 { color: #0a66c2; }
+    pre { background:#f4f4f4; padding:10px; border-radius:6px; overflow:auto; }
+    .note { background:#fff8c6; padding:10px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <h1>Noahjo Shop — Demo / Anleitung</h1>
+  <p>This is a simple placeholder frontend. To use the real backend, set the <code>BACKEND_URL</code> variable below to your backend (Railway/Render) URL.</p>
+  <p class="note"><strong>Ersetze:</strong> <code>const BACKEND_URL = 'http://localhost:3001'</code> mit deiner Backend-URL nach dem Deploy.</p>
+  <pre id="output">Loading products...</pre>
+
+  <script>
+    const BACKEND_URL = 'http://localhost:3001'; // <-- replace with your deployed backend URL
+    async function load() {
+      try {
+        const res = await fetch(BACKEND_URL + '/api/products');
+        const data = await res.json();
+        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('output').textContent = 'Fehler beim Laden: ' + err.message + '\n\n' +
+            'Stelle sicher, dass das Backend läuft und BACKEND_URL korrekt ist.';
+      }
+    }
+    load();
+  </script>
+
+  <h2>Kurzanleitung</h2>
+  <ol>
+    <li>Backend deployen zu Railway/Render und die URL kopieren.</li>
+    <li>In dieser Datei <code>BACKEND_URL</code> anpassen und erneut pushen.</li>
+    <li>Frontend auf Vercel deployen (oder ebenfalls Render verwenden).</li>
+  </ol>
+</body>
+</html>
