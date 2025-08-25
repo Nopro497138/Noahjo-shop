@@ -2,10 +2,14 @@
   "name": "noahjo-shop-server",
   "version": "1.0.2",
   "private": true,
+  "type": "commonjs",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
     "init-db": "node server.js --init-db"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
     "better-sqlite3": "^8.2.0",
