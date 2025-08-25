@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Noahjo Shop — Demo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 24px; max-width: 900px; margin: auto; }
+    h1 { color: #0a66c2; }
+    pre { background:#f4f4f4; padding:10px; border-radius:6px; overflow:auto; }
+    .note { background:#fff8c6; padding:10px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <h1>Noahjo Shop — Demo</h1>
+  <p class="note"><strong>Wichtig:</strong> Ersetze <code>BACKEND_URL</code> weiter unten mit deiner Railway-URL, z. B. <code>https://your-project.up.railway.app</code></p>
+  <pre id="output">Loading products...</pre>
+
+  <script>
+    const BACKEND_URL = 'http://localhost:3001'; // <-- replace with your deployed backend URL after deploying
+    async function load() {
+      try {
+        const res = await fetch(BACKEND_URL + '/api/products');
+        const data = await res.json();
+        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('output').textContent = 'Fehler beim Laden: ' + err.message + '\n\n' +
+            'Stelle sicher, dass das Backend läuft und BACKEND_URL korrekt ist.';
+      }
+    }
+    load();
+  </script>
+</body>
+</html>
