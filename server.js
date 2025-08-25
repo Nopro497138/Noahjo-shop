@@ -1,5 +1,5 @@
-/* server.js - Noahjo shop (no nanoid, uses generateId() instead)
-   - lowdb as file DB to avoid native builds
+/* server.js - Noahjo shop (lowdb entfernt, simples file-basiertes JSON-DB ersetzt es)
+   - Kein lowdb / kein ESM mehr -> sollte auf Railway ohne ERR_REQUIRE_ESM laufen.
    - /webhook uses express.raw BEFORE express.json
    - serves ./public with SPA fallback
 */
@@ -13,9 +13,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const http = require('http');
 
-// -> lowdb wird jetzt über db-client.js geladen (dynamisch importiert)
-const dbClient = require('./db-client');
-
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 const JWT_SECRET = process.env.JWT_SECRET || 'please-change-this';
@@ -27,17 +24,108 @@ if (STRIPE_SECRET_KEY) stripe = require('stripe')(STRIPE_SECRET_KEY);
 
 /* ---------- small safe id generator (no external deps) ---------- */
 function generateId() {
-  // timestamp + random part, URL-safe-ish
   return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
 }
+
+/* ---------- simple file-based JSON DB wrapper (replacement for lowdb) ---------- */
+/* Usage in code remains the same: await db.read(); ... db.data ... await db.write(); */
+const db = {
+  filePath: DB_FILE,
+  data: null,
+
+  async _ensureDir() {
+    const dir = path.dirname(this.filePath);
+    try {
+      await fs.promises.mkdir(dir, { recursive: true });
+    } catch (e) {
+      // ignore
+    }
+  },
+
+  async read() {
+    await this._ensureDir();
+    try {
+      const txt = await fs.promises.readFile(this.filePath, 'utf8');
+      this.data = JSON.parse(txt);
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        // file missing -> initialize structure
+        this.data = {
+          users: [],
+          products: [],
+          reviews: [],
+          orders: [],
+          messages: []
+        };
+        // write seeds below if needed
+      } else {
+        // rethrow other errors
+        throw err;
+      }
+    }
+
+    // ensure keys exist
+    this.data ||= {};
+    this.data.users ||= [];
+    this.data.products ||= [];
+    this.data.reviews ||= [];
+    this.data.orders ||= [];
+    this.data.messages ||= [];
+
+    // seed products if empty
+    if (!this.data.products || this.data.products.length === 0) {
+      this.data.products = [
+        {
+          id: 'prod-1',
+          title: 'Nebula Headset',
+          category: 'Accessories',
+          price: 79.99,
+          short_desc: 'Wireless gaming headset with spatial audio and nebula lighting.',
+          long_desc: 'Immersive over-ear headset built for long sessions. 50mm drivers, low-latency wireless mode, breathable memory-foam cushions and subtle nebula RGB.',
+          images: ['/images/headset-1.jpg','/images/headset-2.jpg']
+        },
+        {
+          id: 'prod-2',
+          title: 'Void Runner Hoodie',
+          category: 'Apparel',
+          price: 49.99,
+          short_desc: 'Comfort-fit hoodie with glow-in-dark print.',
+          long_desc: 'Premium cotton-blend hoodie featuring reflective galaxy print.',
+          images: ['/images/hoodie-1.jpg']
+        },
+        {
+          id: 'prod-3',
+          title: 'Meteor Grip',
+          category: 'Accessories',
+          price: 12.99,
+          short_desc: 'Tactical phone grip inspired by meteor textures.',
+          long_desc: 'Slim profile grip with anti-slip texture.',
+          images: ['/images/grip-1.jpg']
+        }
+      ];
+      // we'll write below (caller should call write if they want it persisted immediately)
+    }
+  },
+
+  async write() {
+    await this._ensureDir();
+    const tmp = this.filePath + '.tmp';
+    const dataStr = JSON.stringify(this.data || {}, null, 2);
+    // atomic write: write tmp then rename
+    await fs.promises.writeFile(tmp, dataStr, 'utf8');
+    await fs.promises.rename(tmp, this.filePath);
+  }
+};
 
 /* ---------- bootstrap (init or run) ---------- */
 (async () => {
   try {
     const isInitOnly = process.argv.includes('--init-db');
 
-    // init lowdb via db-client (dynamic import intern)
-    const db = await dbClient.init(DB_FILE);
+    // Initialize DB (read or create + seed in-memory)
+    await db.read();
+    // persist seeded data if file was missing or products seeded
+    await db.write();
 
     if (isInitOnly) {
       console.log('DB init complete (init-only).');
@@ -122,7 +210,7 @@ function generateId() {
       }
     }
 
-    /* ---------- API routes (lowdb-backed) ---------- */
+    /* ---------- API routes (file-backed DB) ---------- */
 
     // Register
     app.post('/api/auth/register', async (req, res) => {
