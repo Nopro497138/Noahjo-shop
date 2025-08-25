@@ -5,30 +5,107 @@
   <title>Noahjo Shop — Demo</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body { font-family: Arial, sans-serif; padding: 24px; max-width: 900px; margin: auto; }
-    h1 { color: #0a66c2; }
-    pre { background:#f4f4f4; padding:10px; border-radius:6px; overflow:auto; }
-    .note { background:#fff8c6; padding:10px; border-radius:6px; }
+    body { font-family: Arial, sans-serif; padding: 24px; max-width: 900px; margin: auto; background:#f6f8fb; color:#0b2240; }
+    h1 { color: #0a66c2; margin-bottom:6px; }
+    pre { background:#fff; padding:12px; border-radius:6px; overflow:auto; border:1px solid #e6eaf0; }
+    .note { background:#fff8c6; padding:10px; border-radius:6px; margin-bottom:12px; }
+    .controls { margin:12px 0 18px 0; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .small { color:#3b4a63; font-size:13px; }
+    .btn { background:#0a66c2; color:white; border:0; padding:8px 12px; border-radius:6px; cursor:pointer; }
+    .btn.secondary { background:#6c7a92; }
+    .status { margin-bottom:10px; font-weight:600; }
+    .error { color:#8b1d1d; background:#ffecec; padding:10px; border-radius:6px; border:1px solid #f0caca; }
+    label { font-weight:600; margin-right:6px; }
+    input[type=text] { padding:8px; border-radius:6px; border:1px solid #d6dbe5; min-width:300px; }
+    @media (max-width:520px){ input[type=text]{ min-width:140px; } .controls{flex-direction:column;align-items:stretch} }
   </style>
 </head>
 <body>
   <h1>Noahjo Shop — Demo</h1>
-  <p class="note"><strong>Wichtig:</strong> Ersetze <code>BACKEND_URL</code> weiter unten mit deiner Railway-URL, z. B. <code>https://your-project.up.railway.app</code></p>
+
+  <p class="note"><strong>Hinweis:</strong> Früher musste man `BACKEND_URL` manuell ersetzen. Diese Seite erkennt das Backend jetzt automatisch. Du kannst unten trotzdem eine andere URL eingeben, falls nötig.</p>
+
+  <div class="controls" aria-hidden="false">
+    <div>
+      <label for="backend">Backend URL:</label>
+      <input id="backend" type="text" placeholder="z. B. https://noahjo-shop.up.railway.app" />
+    </div>
+    <button id="useDetected" class="btn">Erkannte URL verwenden</button>
+    <button id="reloadBtn" class="btn secondary">Produkte neu laden</button>
+    <div style="margin-left:auto" class="small">Detektierte URL: <span id="detected" style="font-weight:700">—</span></div>
+  </div>
+
+  <div id="status" class="status">Loading products...</div>
+  <div id="err" style="display:none" class="error"></div>
   <pre id="output">Loading products...</pre>
 
   <script>
-    const BACKEND_URL = 'https://noahjo-shop.up.railway.app'; // <-- replace with your deployed backend URL after deploying
-    async function load() {
-      try {
-        const res = await fetch(BACKEND_URL + '/api/products');
-        const data = await res.json();
-        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
-      } catch (err) {
-        document.getElementById('output').textContent = 'Fehler beim Laden: ' + err.message + '\n\n' +
-            'Stelle sicher, dass das Backend läuft und BACKEND_URL korrekt ist.';
+    (function () {
+      // Erkenne die Backend-URL automatisch, oder nutze window.BACKEND_URL falls gesetzt.
+      const AUTO_DETECTED = window.BACKEND_URL || window.location.origin;
+      const detectedEl = document.getElementById('detected');
+      const backendInput = document.getElementById('backend');
+      const useDetectedBtn = document.getElementById('useDetected');
+      const reloadBtn = document.getElementById('reloadBtn');
+      const statusEl = document.getElementById('status');
+      const outputEl = document.getElementById('output');
+      const errEl = document.getElementById('err');
+
+      detectedEl.textContent = AUTO_DETECTED;
+      backendInput.value = AUTO_DETECTED;
+
+      function showError(msg) {
+        errEl.style.display = 'block';
+        errEl.textContent = msg;
+        statusEl.textContent = 'Fehler';
+        outputEl.textContent = '';
       }
-    }
-    load();
+
+      function clearError() {
+        errEl.style.display = 'none';
+        errEl.textContent = '';
+      }
+
+      async function loadProducts() {
+        clearError();
+        const BACKEND_URL = (backendInput.value && backendInput.value.trim()) ? backendInput.value.trim() : AUTO_DETECTED;
+        statusEl.textContent = 'Produkte werden geladen… (' + BACKEND_URL + '/api/products)';
+        outputEl.textContent = 'Loading products...';
+        try {
+          const res = await fetch(BACKEND_URL.replace(/\/$/, '') + '/api/products', { method: 'GET' });
+          if (!res.ok) {
+            // Fehlerhafte Antwort vom Server (CORS, 404, 500)
+            const text = await res.text().catch(()=>res.statusText || '');
+            throw new Error('HTTP ' + res.status + ' — ' + (text || res.statusText));
+          }
+          const data = await res.json();
+          statusEl.textContent = 'Produkte geladen.';
+          outputEl.textContent = JSON.stringify(data, null, 2);
+        } catch (err) {
+          // Häufige Ursachen: falsche URL, Backend down, CORS block, Netzwerk
+          const msgLines = [
+            'Fehler beim Laden der Produkte:',
+            err && err.message ? err.message : String(err),
+            '',
+            'Mögliche Ursachen:',
+            '- Backend-URL ist falsch (prüfe die erkannte URL oben oder trage die Railway-URL manuell ein).',
+            '- Das Backend ist nicht erreichbar (Deployment fehlgeschlagen oder Prozess crashed).',
+            '- CORS blockiert die Anfrage (prüfe Backend-Logs).'
+          ];
+          showError(msgLines.join('\\n'));
+        }
+      }
+
+      useDetectedBtn.addEventListener('click', () => {
+        backendInput.value = AUTO_DETECTED;
+        loadProducts();
+      });
+
+      reloadBtn.addEventListener('click', () => loadProducts());
+
+      // load on first view
+      loadProducts();
+    })();
   </script>
 </body>
 </html>
