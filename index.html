@@ -2,355 +2,307 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Noahjo Shop — Full Frontend</title>
+  <title>Noahjo Shop — Demo</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
+    /* --- visual theme: clean + same feel as your original demo --- */
     :root{
-      --bg:#f6f8fb; --card:#fff; --muted:#6b7280; --accent:#0a66c2;
-      --radius:10px; --shadow: 0 6px 18px rgba(12,20,40,0.06);
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      --bg:#f8fbff;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#0a66c2;
+      --radius:10px;
+      --shadow: 0 10px 30px rgba(10, 40, 80, 0.06);
     }
-    body{margin:0;background:var(--bg);color:#071329;min-height:100vh}
-    header{background:linear-gradient(90deg,#f8fbff,#eef6ff);padding:18px;border-bottom:1px solid #e6eef8}
-    .container{max-width:1100px;margin:18px auto;padding:0 18px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#0a66c2,#6aa7ff);display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#f6f9ff,var(--bg));color:#07203a}
+    .wrap{max-width:900px;margin:28px auto;padding:20px}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#58a0ff);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:22px;box-shadow:var(--shadow)}
     h1{margin:0;font-size:20px}
-    nav{margin-left:auto;display:flex;gap:8px;align-items:center}
-    button{background:var(--accent);color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer}
-    .btn-ghost{background:transparent;color:var(--accent);border:1px solid transparent;padding:8px 10px}
-    .header-right{display:flex;gap:8px;align-items:center}
-    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
-    .card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
-    .muted{color:var(--muted);font-size:13px}
-    .product{display:flex;gap:12px;align-items:flex-start}
-    .product img{width:110px;height:80px;object-fit:cover;border-radius:8px}
-    .p-title{font-weight:700;margin:0}
+    p.note{background:#fff8c6;padding:10px;border-radius:8px;color:#6a5c00}
+    .controls{margin-left:auto;display:flex;gap:8px;align-items:center}
+    button{background:var(--accent);color:white;border:0;padding:8px 12px;border-radius:8px;cursor:pointer;transition:transform .12s ease,box-shadow .12s}
+    button:hover{transform:translateY(-2px)}
+    .btn-ghost{background:transparent;color:var(--accent);border:1px solid rgba(10,102,194,0.12)}
     .small{font-size:13px;color:var(--muted)}
+    .card{background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);margin-bottom:14px}
+    pre#output{background:#f4f4f4;padding:12px;border-radius:8px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:14px}
+    .product{display:flex;gap:12px;padding:10px;border-radius:8px;border:1px solid #f1f5fb;align-items:center}
+    .product img{width:94px;height:64px;object-fit:cover;border-radius:6px}
     .price{font-weight:700;color:#0b3a66}
-    .cart-list{list-style:none;padding:0;margin:0}
-    .cart-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #eef4fb}
+    label{display:block;margin-top:8px;font-weight:600}
     input[type=text], input[type=password], input[type=number]{
-      width:100%;padding:8px;border-radius:8px;border:1px solid #e6eef8;margin-top:6px
+      width:100%;padding:8px;border-radius:8px;border:1px solid #e8eef7;margin-top:6px
     }
-    label{display:block;font-weight:600;margin-top:8px}
-    .row{display:flex;gap:8px}
-    .flex{display:flex;gap:8px;align-items:center}
-    .center{text-align:center}
-    .top-actions{display:flex;gap:8px}
-    footer{margin-top:22px;padding:12px;text-align:center;color:var(--muted);font-size:13px}
-    .notice{background:#fff9e6;padding:10px;border-radius:8px;border:1px solid #fff0c9}
+    .muted{color:var(--muted);font-size:13px}
+    .notice{background:#fff8e1;padding:10px;border-radius:8px;border:1px solid #fff1c6}
     .hidden{display:none}
-    .reviews{margin-top:8px}
-    .review{border-top:1px solid #f1f5f9;padding:8px 0}
-    .danger{background:#ffeef0;color:#8b1d2b}
-    .success{background:#ecfdf5;color:#0f5132}
-    .small-btn{padding:6px 8px;border-radius:8px;border:1px solid #e6eef8;background:#fff;cursor:pointer}
-    .badge{background:#eef6ff;color:#0a66c2;padding:4px 8px;border-radius:999px;font-size:12px}
-    @media (max-width:900px){ .grid{grid-template-columns:1fr; } .header-right{display:none} }
+    .fade-in{animation:fadeIn .28s ease}
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:none } }
+    /* small responsive */
+    @media (max-width:920px){
+      .grid{grid-template-columns:1fr}
+      .controls{display:none}
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="container" style="display:flex;align-items:center">
-      <div class="brand">
-        <div class="logo">N</div>
-        <div>
-          <h1>Noahjo Shop</h1>
-          <div class="muted" style="font-size:12px">Demo store — single-file frontend</div>
-        </div>
+  <div class="wrap">
+    <header>
+      <div class="logo">N</div>
+      <div>
+        <h1>Noahjo Shop — Demo</h1>
+        <div class="small">Simple demo storefront — integrated auth, reviews & Stripe checkout</div>
       </div>
 
-      <nav style="margin-left:auto">
-        <div class="header-right">
-          <div id="welcome" class="muted">Not signed in</div>
-          <div id="auth-buttons" style="display:flex;gap:8px">
-            <button id="btn-login">Login</button>
-            <button id="btn-register" class="btn-ghost">Register</button>
-          </div>
-          <div id="user-actions" class="hidden" style="display:flex;gap:8px;align-items:center">
-            <div id="user-email" class="muted"></div>
-            <button id="btn-logout" class="btn-ghost">Logout</button>
-            <button id="btn-cart" title="Cart">Cart (<span id="cart-count">0</span>)</button>
-          </div>
-        </div>
-      </nav>
-    </div>
-  </header>
+      <div class="controls">
+        <div id="welcome" class="small">Not signed in</div>
+        <button id="btn-login" class="btn-ghost">Login</button>
+        <button id="btn-register">Register</button>
+        <button id="btn-cart" class="btn-ghost">Cart (<span id="cart-count">0</span>)</button>
+      </div>
+    </header>
 
-  <main class="container">
+    <p class="note card"><strong>Note:</strong> Replace <code>API_BASE</code> inside the script below if your backend runs on another host. The frontend never receives your admin email.</p>
+
+    <!-- main area: left product area + right cart/actions -->
     <div class="grid">
       <div>
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center">
-            <h2 style="margin:0">Products</h2>
-            <div class="muted">Browse and add items to cart</div>
+            <div><strong>Products</strong><div class="small">Loaded from /api/products</div></div>
+            <div>
+              <input id="search" type="text" placeholder="Search..." style="padding:6px;border-radius:8px;border:1px solid #e8eef7" />
+              <button id="btn-refresh" class="btn-ghost">Refresh</button>
+            </div>
           </div>
 
-          <div id="products-list" style="margin-top:12px"></div>
+          <div id="products" style="margin-top:12px">
+            <pre id="output" class="fade-in">Loading products...</pre>
+          </div>
         </div>
 
-        <div class="card" style="margin-top:12px">
-          <h3 style="margin:0">Search & Reviews (demo)</h3>
-          <div class="muted">Open a product to see reviews and post (requires login)</div>
-          <div style="margin-top:8px">
-            <input id="search" type="text" placeholder="Search products (title or category)" />
-            <button onclick="renderProducts()">Search</button>
-          </div>
-          <div id="product-detail" class="hidden" style="margin-top:12px"></div>
-        </div>
+        <div id="product-detail" class="card hidden"></div>
       </div>
 
       <aside>
         <div class="card">
-          <h3 style="margin:0">Cart</h3>
-          <ul id="cart-items" class="cart-list" style="margin-top:12px"></ul>
-          <div style="display:flex;justify-content:space-between;margin-top:12px">
-            <div class="muted">Total:</div>
+          <strong>Cart</strong>
+          <div id="cart-list" style="margin-top:10px"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:10px">
+            <div class="small">Total</div>
             <div id="cart-total" class="price">—</div>
           </div>
-          <div style="margin-top:12px">
+          <div style="margin-top:10px;display:flex;gap:8px">
             <button id="btn-checkout">Checkout</button>
             <button id="btn-clear" class="btn-ghost">Clear</button>
           </div>
-          <div id="checkout-msg" style="margin-top:10px"></div>
+          <div id="checkout-msg" class="small" style="margin-top:8px"></div>
         </div>
 
         <div class="card" style="margin-top:12px">
-          <h4>User Actions</h4>
-          <div class="muted">Registration requires email verification</div>
-          <div style="margin-top:8px">
-            <label>Email to check</label>
-            <input id="ui-check-email" type="text" placeholder="you@example.com" />
-            <button onclick="uiCheckEmail()">Check</button>
-            <pre id="ui-check-result" class="muted">No check yet</pre>
+          <strong>User</strong>
+          <div class="small" style="margin-top:6px">Check if an email exists & request verification code</div>
 
-            <label style="margin-top:8px">Request verification code</label>
-            <input id="ui-req-email" type="text" placeholder="you@example.com" />
-            <button onclick="uiRequestCode()">Request Code</button>
-            <pre id="ui-code-result" class="muted">No code requested</pre>
+          <label>Check email</label>
+          <input id="check-email" type="text" placeholder="you@example.com" />
+          <button id="btn-check">Check</button>
+          <pre id="check-result" class="small">No check yet</pre>
 
-            <label style="margin-top:8px">Register</label>
-            <input id="ui-reg-username" placeholder="Username" />
-            <input id="ui-reg-email" placeholder="you@example.com" />
-            <input id="ui-reg-password" type="password" placeholder="Choose a password" />
-            <input id="ui-reg-code" placeholder="Verification code" />
-            <button onclick="uiRegister()">Register</button>
-            <pre id="ui-reg-result" class="muted">Not registered</pre>
-
-            <label style="margin-top:8px">Login</label>
-            <input id="ui-login-email" placeholder="you@example.com" />
-            <input id="ui-login-password" type="password" placeholder="Password" />
-            <button onclick="uiLogin()">Login</button>
-            <pre id="ui-login-result" class="muted">Not logged in</pre>
-          </div>
+          <label>Request verification code</label>
+          <input id="req-email" type="text" placeholder="you@example.com" />
+          <button id="btn-req-code">Request code</button>
+          <pre id="req-result" class="small">No code requested</pre>
         </div>
 
-        <div style="height:20px"></div>
-        <div class="card notice">
-          <strong>Privacy:</strong> The admin/owner email is stored server-side only (not in this frontend).
+        <div class="card notice" style="margin-top:12px">
+          <div class="small">Privacy note: your admin/owner email is stored only on the server (env var). This frontend never contains it.</div>
         </div>
       </aside>
     </div>
 
-    <footer>
-      <div class="muted">Demo store — connects to backend at <code>/api/*</code>.</div>
+    <footer style="margin-top:18px;text-align:center" class="small">
+      Demo site — make sure your backend is running and environment variables are set on the host.
     </footer>
-  </main>
+  </div>
 
-  <!-- Modal containers (simple) -->
+  <!-- simple modal area -->
   <div id="modal-root"></div>
 
 <script>
 /*
-  Single-file frontend script
-  - interacts with server endpoints described in conversation
-  - stores JWT in localStorage under "nj_token"
-  - supports username field in registration (front sends it to server)
-  - does not show or contain admin email
+  Single-file frontend:
+  - Uses APIs on same origin (API_BASE = location.origin).
+  - Provides login / register (with username + verification code), product listing, cart, checkout.
+  - Stores JWT in localStorage under 'nj_token'.
+  - Assumes server endpoints as previously discussed exist.
 */
 
-const API_BASE = location.origin; // assumes server is same origin; change if needed
+const API_BASE = location.origin; // change if backend is on different host
 const TOKEN_KEY = 'nj_token';
 let state = {
   token: localStorage.getItem(TOKEN_KEY) || null,
   user: null,
   products: [],
-  cart: []  // {id, title, price, qty}
+  cart: []
 };
 
-// parse JWT payload (insecure client-side decode for UI only)
+// util: parse JWT payload (client-side only)
 function parseJwt(token){
   try {
-    const payload = token.split('.')[1];
-    const json = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-    return json;
+    const b = token.split('.')[1];
+    return JSON.parse(atob(b.replace(/-/g,'+').replace(/_/g,'/')));
   } catch(e){ return null; }
 }
 
 function setToken(token){
   state.token = token;
   if(token) localStorage.setItem(TOKEN_KEY, token); else localStorage.removeItem(TOKEN_KEY);
-  if(token){
-    const p = parseJwt(token);
-    if(p) state.user = { id: p.id, email: p.email, is_admin: !!p.is_admin, username: p.username || null };
-  } else {
-    state.user = null;
-  }
-  refreshAuthUI();
+  state.user = token ? parseJwt(token) : null;
+  refreshHeader();
 }
 
-// initialize token on load
 setToken(state.token);
 
-// --- UI wiring for header buttons ---
-document.getElementById('btn-login').addEventListener('click', () => { openAuthModal('login'); });
-document.getElementById('btn-register').addEventListener('click', () => { openAuthModal('register'); });
-document.getElementById('btn-logout').addEventListener('click', () => {
-  setToken(null);
-  document.getElementById('loginResult').textContent = 'Logged out';
-});
-document.getElementById('btn-cart').addEventListener('click', () => { window.scrollTo({ top: 400, behavior:'smooth' }); });
+// DOM wiring
+document.getElementById('btn-refresh').addEventListener('click', ()=>loadProducts(true));
+document.getElementById('btn-check').addEventListener('click', checkEmail);
+document.getElementById('btn-req-code').addEventListener('click', requestCode);
+document.getElementById('btn-login').addEventListener('click', ()=>openModal('login'));
+document.getElementById('btn-register').addEventListener('click', ()=>openModal('register'));
+document.getElementById('btn-cart').addEventListener('click', ()=>window.scrollTo({top:120, behavior:'smooth'}));
 document.getElementById('btn-checkout').addEventListener('click', checkout);
-document.getElementById('btn-clear').addEventListener('click', () => { state.cart = []; saveCart(); renderCart(); });
+document.getElementById('btn-clear').addEventListener('click', ()=>{ state.cart=[]; saveCart(); renderCart(); });
 
-// small helpers
-function authHeader(){
-  return state.token ? { 'Authorization': 'Bearer ' + state.token } : {};
-}
+// Helper headers
+function authHeader(){ return state.token ? { 'Authorization': 'Bearer ' + state.token } : {}; }
 function jsonHeaders(){ return { 'Content-Type': 'application/json' }; }
-function showMessage(el, text, kind='muted'){ el.textContent = text; el.className = kind; }
 
-// load products from API
-async function loadProductsFromApi(){
+/* ---------- Products ---------- */
+async function loadProducts(renderAsCards=false){
+  const out = document.getElementById('output');
+  out.textContent = 'Loading products...';
   try {
     const res = await fetch(API_BASE + '/api/products');
     if(!res.ok) throw new Error('Failed to fetch products: ' + res.status);
     const data = await res.json();
     state.products = data;
-    return data;
+    // By default show JSON as in your original page, but also provide cards
+    if(!renderAsCards){
+      out.textContent = JSON.stringify(data, null, 2);
+    } else {
+      renderProductCards();
+    }
+    renderProductCards(); // show cards below pre as well
   } catch (err) {
-    console.error(err);
-    return [];
+    out.textContent = 'Error loading products: ' + (err.message || err);
   }
 }
 
-function formatPrice(p){ return '$' + (Number(p).toFixed(2)); }
-
-/* render product list */
-async function renderProducts(){
-  const q = (document.getElementById('search').value || '').toLowerCase().trim();
-  if(state.products.length === 0) await loadProductsFromApi();
-  const list = state.products.filter(p => {
-    if(!q) return true;
-    return (p.title || '').toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q);
-  });
-
-  const container = document.getElementById('products-list');
-  container.innerHTML = '';
-  if(list.length === 0){
-    container.innerHTML = '<div class="muted">No products found</div>';
-    return;
+// create product cards under 'products'
+function renderProductCards(){
+  const cont = document.getElementById('products');
+  // keep the original pre at top, then add a small cards list below
+  // We'll keep pre as first child and build a cards list below it
+  let pre = document.getElementById('output');
+  if(!pre) {
+    pre = document.createElement('pre'); pre.id = 'output';
+    cont.appendChild(pre);
   }
-
-  for(const p of list){
+  // build cards
+  const cards = document.createElement('div');
+  cards.style.marginTop = '12px';
+  for(const p of state.products){
     const div = document.createElement('div');
-    div.className = 'product';
-    const imgSrc = (p.images && p.images[0]) ? p.images[0] : 'https://via.placeholder.com/160x110?text=Product';
+    div.className = 'product fade-in';
+    const img = (p.images && p.images[0]) ? p.images[0] : 'https://via.placeholder.com/160x110?text=Product';
     div.innerHTML = `
-      <img src="${imgSrc}" alt="${escapeHtml(p.title)}" />
+      <img src="${img}" alt="${escapeHtml(p.title)}" />
       <div style="flex:1">
-        <div style="display:flex;justify-content:space-between;align-items:start">
-          <div>
-            <div class="p-title">${escapeHtml(p.title)}</div>
-            <div class="small">${escapeHtml(p.category || '')}</div>
-          </div>
-          <div class="price">${formatPrice(p.price)}</div>
-        </div>
-        <div class="muted" style="margin-top:6px">${escapeHtml(p.short_desc || '')}</div>
+        <div style="display:flex;justify-content:space-between"><div><strong>${escapeHtml(p.title)}</strong><div class="small">${escapeHtml(p.category||'')}</div></div><div class="price">${formatPrice(p.price)}</div></div>
+        <div class="small" style="margin-top:6px">${escapeHtml(p.short_desc||'')}</div>
         <div style="margin-top:8px;display:flex;gap:8px">
-          <button class="small-btn" onclick='openProduct("${p.id}")'>Open</button>
-          <button class="small-btn" onclick='addToCart("${p.id}", 1)'>Add to cart</button>
+          <button class="btn-ghost" onclick='openProduct("${p.id}")'>Open</button>
+          <button onclick='addToCart("${p.id}", 1)'>Add to cart</button>
         </div>
       </div>
     `;
-    container.appendChild(div);
+    cards.appendChild(div);
+  }
+  // replace any existing cards area
+  const existing = cont.querySelector('.product-cards-area');
+  if(existing) existing.remove();
+  cards.className = 'product-cards-area';
+  cont.appendChild(cards);
+
+  // hide pre if user searched and no results
+  const q = (document.getElementById('search') || {}).value || '';
+  if(q.trim()) {
+    // filter displayed cards
+    const filtered = state.products.filter(p => p.title.toLowerCase().includes(q.toLowerCase()) || (p.category||'').toLowerCase().includes(q.toLowerCase()));
+    if(filtered.length === 0) document.getElementById('output').textContent = 'No products match your search';
+    else document.getElementById('output').textContent = JSON.stringify(filtered, null, 2);
+  } else {
+    document.getElementById('output').textContent = JSON.stringify(state.products, null, 2);
   }
 }
 
+/* product detail + reviews */
 function openProduct(id){
   const p = state.products.find(x=>x.id===id);
   if(!p) return;
   const detail = document.getElementById('product-detail');
   detail.classList.remove('hidden');
-  const imagesHtml = (p.images || []).map(i => `<img src="${i}" style="width:100%;max-width:180px;border-radius:8px;margin-right:8px" />`).join('');
   detail.innerHTML = `
-    <div style="display:flex;gap:12px;align-items:flex-start">
-      <div style="flex:1">
-        <h3 style="margin:0">${escapeHtml(p.title)} <span class="badge">${escapeHtml(p.category || '')}</span></h3>
-        <div class="muted">${escapeHtml(p.long_desc || '')}</div>
-        <div style="margin-top:8px" class="price">${formatPrice(p.price)}</div>
-        <div style="margin-top:8px;display:flex;gap:8px">
-          <button onclick='addToCart("${p.id}",1)'>Add to cart</button>
-          <button onclick='openReviews("${p.id}")' class="btn-ghost">Reviews</button>
-        </div>
-      </div>
-      <div style="width:220px">${imagesHtml}</div>
+    <h3 style="margin:0">${escapeHtml(p.title)} <span class="small">— ${escapeHtml(p.category||'')}</span></h3>
+    <div class="small" style="margin-top:6px">${escapeHtml(p.long_desc||p.short_desc||'')}</div>
+    <div style="margin-top:10px"><strong>${formatPrice(p.price)}</strong></div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button onclick='addToCart("${p.id}",1)'>Add to cart</button>
+      <button class="btn-ghost" onclick='loadReviews("${p.id}")'>Reviews</button>
     </div>
-    <div id="reviews-area" class="reviews"></div>
+    <div id="reviews-area" style="margin-top:12px"></div>
   `;
-  openReviews(id);
+  loadReviews(id);
 }
 
-/* Reviews UI */
-async function openReviews(productId){
+/* Reviews: load & render */
+async function loadReviews(productId){
   const area = document.getElementById('reviews-area');
-  area.innerHTML = '<div class="muted">Loading reviews…</div>';
+  area.innerHTML = '<div class="small">Loading reviews...</div>';
   try {
     const res = await fetch(API_BASE + '/api/products/' + encodeURIComponent(productId) + '/reviews');
-    if(!res.ok) throw new Error('Failed to load reviews');
+    if(!res.ok) throw new Error('failed');
     const rows = await res.json();
-    const canPost = !!state.token;
     let html = '';
-    if(rows.length === 0) html += '<div class="muted">No reviews yet</div>';
+    if(rows.length === 0) html += '<div class="small">No reviews yet</div>';
     for(const r of rows){
-      html += `<div class="review"><div style="display:flex;justify-content:space-between"><div><strong>${escapeHtml(r.author_email_actual || r.author_email || 'User')}</strong> — <span class="small">${escapeHtml(r.created_at)}</span></div>
-        <div>${r.rating} ★</div></div><div style="margin-top:6px">${escapeHtml(r.text || '')}</div>`;
-      // show delete if current user is admin or author — we check token payload client-side (server enforces rules)
-      const jwtPayload = parseJwt(state.token || '');
-      if(jwtPayload){
-        const isAdmin = !!jwtPayload.is_admin;
-        const myId = jwtPayload.id;
-        if(isAdmin || String(myId) === String(r.author_id)){
-          html += `<div style="margin-top:8px"><button class="small-btn danger" onclick="deleteReview(${r.id})">Delete</button></div>`;
-        }
+      html += `<div style="border-top:1px solid #f1f5fb;padding-top:8px;margin-top:8px"><div style="display:flex;justify-content:space-between"><div><strong>${escapeHtml(r.author_email_actual || r.author_email || 'User')}</strong> <span class="small">${escapeHtml(r.created_at)}</span></div><div>${r.rating}★</div></div><div style="margin-top:6px">${escapeHtml(r.text||'')}</div>`;
+      // show delete if jwt says admin or author (UI only; server enforces)
+      const payload = parseJwt(state.token || '') || {};
+      if(payload && (payload.is_admin || String(payload.id) === String(r.author_id))) {
+        html += `<div style="margin-top:6px"><button class="btn-ghost" onclick='deleteReview(${r.id})'>Delete</button></div>`;
       }
       html += `</div>`;
     }
-    if(canPost){
-      html += `
-        <div style="margin-top:12px">
-          <h4>Post a review</h4>
-          <label>Rating (1-5)</label><input id="rev-rating" type="number" min="1" max="5" value="5" />
-          <label>Text</label><input id="rev-text" />
-          <button onclick='postReview("${productId}")'>Post review</button>
-          <div id="rev-result" class="muted"></div>
-        </div>
-      `;
+    // posting area
+    if(state.token) {
+      html += `<div style="margin-top:10px"><h4>Post a review</h4><label>Rating</label><input id="rev-rating" type="number" min="1" max="5" value="5" /><label>Text</label><input id="rev-text" /><div style="margin-top:8px"><button onclick='postReview("${productId}")'>Post</button></div><pre id="rev-res" class="small"></pre></div>`;
     } else {
-      html += `<div class="muted" style="margin-top:12px">Please login to post reviews.</div>`;
+      html += `<div class="small" style="margin-top:8px">Please log in to post reviews.</div>`;
     }
     area.innerHTML = html;
-  } catch(err){
-    area.innerHTML = '<div class="muted">Error loading reviews</div>';
+  } catch(e){
+    area.innerHTML = '<div class="small">Failed to load reviews</div>';
   }
 }
 
 async function postReview(productId){
   const rating = Number(document.getElementById('rev-rating').value || 0);
   const text = document.getElementById('rev-text').value || '';
-  const out = document.getElementById('rev-result');
-  out.textContent = 'Posting...';
+  const resEl = document.getElementById('rev-res');
+  resEl.textContent = 'Posting...';
   try {
     const res = await fetch(API_BASE + '/api/products/' + encodeURIComponent(productId) + '/reviews', {
       method:'POST',
@@ -359,73 +311,73 @@ async function postReview(productId){
     });
     const j = await res.json();
     if(!res.ok) throw new Error(j && j.error ? j.error : 'Error');
-    out.className = 'success';
-    out.textContent = 'Review posted';
-    openReviews(productId);
+    resEl.textContent = 'Posted!';
+    loadReviews(productId);
   } catch(err){
-    out.className = 'danger';
-    out.textContent = 'Failed to post review: ' + (err.message||err);
+    resEl.textContent = 'Failed: ' + (err.message || err);
   }
 }
 
 async function deleteReview(id){
-  if(!confirm('Delete this review?')) return;
+  if(!confirm('Delete review?')) return;
   try {
-    const res = await fetch(API_BASE + '/api/reviews/' + id, {
-      method:'DELETE',
-      headers: authHeader()
-    });
+    const res = await fetch(API_BASE + '/api/reviews/' + id, { method:'DELETE', headers: authHeader() });
     const j = await res.json();
     if(!res.ok) throw new Error(j && j.error ? j.error : 'Error deleting');
     alert('Deleted');
-    // reload current product reviews area (if visible)
-    const det = document.getElementById('product-detail');
-    const pid = det && det.querySelector('h3') ? (det.querySelector('h3').textContent || '').trim() : null;
-    // simple reload of product list for now
-    renderProducts();
+    // refresh products/reviews area
+    document.getElementById('product-detail').innerHTML = '';
+    renderProductCards();
   } catch(e){
     alert('Delete failed: ' + (e.message||e));
   }
 }
 
-/* CART functions */
-function saveCart(){ localStorage.setItem('nj_cart', JSON.stringify(state.cart)); updateCartCount(); renderCart(); }
-function loadCart(){ const v = localStorage.getItem('nj_cart'); state.cart = v ? JSON.parse(v) : []; updateCartCount(); renderCart(); }
-function updateCartCount(){ document.getElementById('cart-count').textContent = state.cart.reduce((s,i)=>s+i.qty,0); const total = state.cart.reduce((s,i)=>s + (i.price * i.qty), 0); document.getElementById('cart-total').textContent = total ? formatPrice(total) : '—'; }
-function addToCart(id, qty = 1){
+/* ---------- CART ---------- */
+function loadCart(){
+  try {
+    const raw = localStorage.getItem('nj_cart');
+    state.cart = raw ? JSON.parse(raw) : [];
+  } catch(e){ state.cart = []; }
+  renderCart();
+}
+function saveCart(){ localStorage.setItem('nj_cart', JSON.stringify(state.cart)); renderCart(); }
+function addToCart(id, qty){
   const p = state.products.find(x=>x.id===id);
   if(!p){ alert('Product not found'); return; }
-  const existing = state.cart.find(c=>c.id===id);
-  if(existing) existing.qty += qty; else state.cart.push({ id: p.id, title: p.title, price: Number(p.price), qty });
+  const existing = state.cart.find(c => c.id === id);
+  if(existing) existing.qty += qty; else state.cart.push({ id:p.id, title:p.title, price:Number(p.price), qty });
   saveCart();
-  alert('Added to cart');
+  document.getElementById('cart-count').textContent = state.cart.reduce((s,i)=>s+i.qty,0);
 }
 function renderCart(){
-  const ul = document.getElementById('cart-items');
-  ul.innerHTML = '';
-  if(state.cart.length === 0) { ul.innerHTML = '<li class="muted">Cart empty</li>'; updateCartCount(); return; }
+  const el = document.getElementById('cart-list');
+  el.innerHTML = '';
+  if(state.cart.length === 0) { el.innerHTML = '<div class="small">Cart is empty</div>'; document.getElementById('cart-total').textContent = '—'; document.getElementById('cart-count').textContent = '0'; return; }
+  let total = 0;
   for(const it of state.cart){
-    const li = document.createElement('li');
-    li.className = 'cart-item';
-    li.innerHTML = `<div>${escapeHtml(it.title)} <div class="muted" style="font-size:12px">${it.qty} × ${formatPrice(it.price)}</div></div>
-      <div style="text-align:right"><button class="small-btn" onclick='changeQty("${it.id}", -1)'>-</button> <button class="small-btn" onclick='changeQty("${it.id}",1)'>+</button> <button class="small-btn" onclick='removeFromCart("${it.id}")'>Remove</button></div>`;
-    ul.appendChild(li);
+    total += it.price * it.qty;
+    const row = document.createElement('div');
+    row.style.display='flex'; row.style.justifyContent='space-between'; row.style.padding='6px 0';
+    row.innerHTML = `<div>${escapeHtml(it.title)} <div class="small">${it.qty} × ${formatPrice(it.price)}</div></div><div style="text-align:right"><button class="btn-ghost" onclick='changeQty("${it.id}", -1)'>-</button> <button onclick='changeQty("${it.id}",1)'>+</button></div>`;
+    el.appendChild(row);
   }
-  updateCartCount();
+  document.getElementById('cart-total').textContent = formatPrice(total);
+  document.getElementById('cart-count').textContent = state.cart.reduce((s,i)=>s+i.qty,0);
 }
 function changeQty(id, delta){
   const it = state.cart.find(x=>x.id===id); if(!it) return;
   it.qty += delta; if(it.qty <= 0) state.cart = state.cart.filter(x=>x.id!==id);
   saveCart();
 }
-function removeFromCart(id){ state.cart = state.cart.filter(x=>x.id!==id); saveCart(); }
+loadCart();
 
-/* Checkout: send items to server and redirect to session.url */
+/* ---------- Checkout (calls server) ---------- */
 async function checkout(){
-  if(state.cart.length === 0){ alert('Cart empty'); return; }
-  if(!state.token){ if(!confirm('You must be logged in to checkout. Login now?')) return; openAuthModal('login'); return; }
-  // Build items for server (server expects { title, price, qty })
+  if(state.cart.length === 0) { alert('Cart empty'); return; }
+  if(!state.token){ if(confirm('You must login to checkout. Open login?')) openModal('login'); return; }
   const items = state.cart.map(i => ({ title: i.title, price: i.price, qty: i.qty }));
+  document.getElementById('checkout-msg').textContent = 'Creating checkout session...';
   try {
     const res = await fetch(API_BASE + '/api/create-checkout-session', {
       method:'POST',
@@ -433,132 +385,132 @@ async function checkout(){
       body: JSON.stringify({ items })
     });
     const j = await res.json();
-    if(!res.ok) throw new Error(j && j.error ? j.error : 'Failed to create session');
-    // redirect
-    if(j.url){
+    if(!res.ok) throw new Error(j && j.error ? j.error : 'Failed');
+    if(j.url) {
+      // redirect to Stripe Checkout
       window.location = j.url;
     } else {
       document.getElementById('checkout-msg').textContent = 'No session URL returned';
     }
   } catch(err){
-    document.getElementById('checkout-msg').textContent = 'Checkout error: ' + err.message;
+    document.getElementById('checkout-msg').textContent = 'Checkout error: ' + (err.message || err);
   }
 }
 
-/* USER flows: Check email, request code, register, login */
-async function uiCheckEmail(){
-  const email = document.getElementById('ui-check-email').value.trim();
+/* ---------- AUTH flows (check email, request code, register, login) ---------- */
+async function checkEmail(){
+  const email = (document.getElementById('check-email').value || '').trim();
   if(!email) return alert('Enter email');
   const res = await fetch(API_BASE + '/api/auth/check-email?email=' + encodeURIComponent(email));
   const j = await res.json();
-  document.getElementById('ui-check-result').textContent = JSON.stringify(j, null, 2);
+  document.getElementById('check-result').textContent = JSON.stringify(j, null, 2);
 }
-async function uiRequestCode(){
-  const email = document.getElementById('ui-req-email').value.trim();
+
+async function requestCode(){
+  const email = (document.getElementById('req-email').value || '').trim();
   if(!email) return alert('Enter email');
-  const res = await fetch(API_BASE + '/api/auth/request-verify', {
-    method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email })
-  });
-  const j = await res.json();
-  document.getElementById('ui-code-result').textContent = JSON.stringify(j, null, 2);
-  // in dev mode server may return code; copy it to reg input as convenience
-  if(j && j.code) document.getElementById('ui-reg-code').value = j.code;
-}
-async function uiRegister(){
-  const email = document.getElementById('ui-reg-email').value.trim();
-  const password = document.getElementById('ui-reg-password').value;
-  const code = document.getElementById('ui-reg-code').value.trim();
-  const username = document.getElementById('ui-reg-username').value.trim() || null;
-  if(!email || !password || !code) return alert('Email, password and verification code required');
   try {
-    const res = await fetch(API_BASE + '/api/auth/register', {
-      method:'POST',
-      headers: jsonHeaders(),
-      body: JSON.stringify({ email, password, verification_code: code, username })
+    const res = await fetch(API_BASE + '/api/auth/request-verify', {
+      method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email })
     });
     const j = await res.json();
-    document.getElementById('ui-reg-result').textContent = JSON.stringify(j, null, 2);
-    if(res.ok && j.token){ setToken(j.token); document.getElementById('ui-reg-result').textContent = 'Registered & logged in'; }
+    document.getElementById('req-result').textContent = JSON.stringify(j, null, 2);
+    // server may return code in dev mode; put into register modal automatically (convenience)
+    if(j && j.code) {
+      // if register modal open, fill code
+      const mcode = document.querySelector('#modal-root input[name="reg-code"]');
+      if(mcode) mcode.value = j.code;
+    }
   } catch(e){
-    document.getElementById('ui-reg-result').textContent = 'Register error: ' + (e.message||e);
-  }
-}
-async function uiLogin(){
-  const email = document.getElementById('ui-login-email').value.trim();
-  const password = document.getElementById('ui-login-password').value;
-  if(!email || !password) return alert('Email & password required');
-  try {
-    const res = await fetch(API_BASE + '/api/auth/login', {
-      method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password })
-    });
-    const j = await res.json();
-    document.getElementById('ui-login-result').textContent = JSON.stringify(j, null, 2);
-    if(res.ok && j.token){ setToken(j.token); document.getElementById('ui-login-result').textContent = 'Logged in'; }
-  } catch(e){
-    document.getElementById('ui-login-result').textContent = 'Login error: ' + (e.message||e);
+    document.getElementById('req-result').textContent = 'Request failed';
   }
 }
 
-/* Modal & auth modals (minimal) */
-function openAuthModal(mode){
+/* open modal for login/register */
+function openModal(mode){
+  const root = document.getElementById('modal-root');
+  root.innerHTML = '';
   const modal = document.createElement('div');
   modal.className = 'card';
-  modal.style.position = 'fixed'; modal.style.left = '50%'; modal.style.top = '50%';
-  modal.style.transform = 'translate(-50%,-50%)'; modal.style.zIndex = 9999; modal.style.width='90%'; modal.style.maxWidth='420px';
+  modal.style.position='fixed'; modal.style.left='50%'; modal.style.top='50%'; modal.style.transform='translate(-50%,-50%)';
+  modal.style.zIndex = 9999; modal.style.width='92%'; modal.style.maxWidth='420px';
   if(mode === 'login'){
-    modal.innerHTML = `<h3>Login</h3><label>Email</label><input id="m-email" /><label>Password</label><input id="m-pass" type="password" /><div style="margin-top:8px;display:flex;gap:8px"><button id="m-login-btn">Login</button><button id="m-close">Close</button></div><pre id="m-result" class="muted"></pre>`;
-    modal.querySelector('#m-close').onclick = ()=>modal.remove();
-    modal.querySelector('#m-login-btn').onclick = async ()=> {
-      const em = modal.querySelector('#m-email').value.trim();
+    modal.innerHTML = `<h3>Login</h3>
+      <label>Email</label><input id="m-email" type="text" />
+      <label>Password</label><input id="m-pass" type="password" />
+      <div style="margin-top:10px;display:flex;gap:8px"><button id="m-login">Login</button><button id="m-close">Close</button></div>
+      <pre id="m-res" class="small"> </pre>`;
+    modal.querySelector('#m-close').onclick = ()=>root.innerHTML='';
+    modal.querySelector('#m-login').onclick = async ()=>{
+      const email = modal.querySelector('#m-email').value.trim();
       const pw = modal.querySelector('#m-pass').value;
-      if(!em||!pw) return alert('needed');
-      const res = await fetch(API_BASE + '/api/auth/login', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email:em, password:pw }) });
-      const j = await res.json();
-      modal.querySelector('#m-result').textContent = JSON.stringify(j,null,2);
-      if(res.ok && j.token){ setToken(j.token); modal.remove(); }
+      if(!email || !pw) return alert('email & password required');
+      try {
+        const res = await fetch(API_BASE + '/api/auth/login', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password: pw }) });
+        const j = await res.json();
+        document.getElementById('m-res').textContent = JSON.stringify(j, null, 2);
+        if(res.ok && j.token) {
+          setToken(j.token);
+          root.innerHTML = '';
+          alert('Logged in');
+        }
+      } catch(e) { document.getElementById('m-res').textContent = 'Login failed'; }
     };
   } else {
-    modal.innerHTML = `<h3>Register (requires verification)</h3>
-      <label>Username</label><input id="m-user" />
-      <label>Email</label><input id="m-email" />
-      <label>Password</label><input id="m-pass" type="password" />
-      <label>Verification code</label><input id="m-code" />
-      <div style="margin-top:8px;display:flex;gap:8px"><button id="m-register-btn">Register</button><button id="m-close">Close</button></div>
-      <pre id="m-result" class="muted"></pre>`;
-    modal.querySelector('#m-close').onclick = ()=>modal.remove();
-    modal.querySelector('#m-register-btn').onclick = async ()=> {
-      const user = modal.querySelector('#m-user').value.trim();
-      const em = modal.querySelector('#m-email').value.trim();
+    modal.innerHTML = `<h3>Register</h3>
+      <label>Username</label><input name="reg-username" id="m-user" type="text" />
+      <label>Email</label><input name="reg-email" id="m-email" type="text" />
+      <label>Password</label><input name="reg-password" id="m-pass" type="password" />
+      <label>Verification code</label><input name="reg-code" id="m-code" type="text" />
+      <div style="margin-top:10px;display:flex;gap:8px"><button id="m-register">Register</button><button id="m-close">Close</button></div>
+      <pre id="m-res" class="small"> </pre>`;
+    modal.querySelector('#m-close').onclick = ()=>root.innerHTML='';
+    modal.querySelector('#m-register').onclick = async ()=>{
+      const username = modal.querySelector('#m-user').value.trim();
+      const email = modal.querySelector('#m-email').value.trim();
       const pw = modal.querySelector('#m-pass').value;
       const code = modal.querySelector('#m-code').value.trim();
-      if(!em||!pw||!code) return alert('email,password,code required');
-      const res = await fetch(API_BASE + '/api/auth/register', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email:em, password:pw, verification_code:code, username:user }) });
-      const j = await res.json();
-      modal.querySelector('#m-result').textContent = JSON.stringify(j,null,2);
-      if(res.ok && j.token){ setToken(j.token); modal.remove(); }
+      if(!email || !pw || !code) return alert('email, password, verification code required');
+      try {
+        const res = await fetch(API_BASE + '/api/auth/register', {
+          method:'POST', headers: jsonHeaders(),
+          body: JSON.stringify({ email, password: pw, verification_code: code, username })
+        });
+        const j = await res.json();
+        document.getElementById('m-res').textContent = JSON.stringify(j, null, 2);
+        if(res.ok && j.token){
+          setToken(j.token);
+          root.innerHTML = '';
+          alert('Registered & logged in');
+        }
+      } catch(e){
+        document.getElementById('m-res').textContent = 'Register failed';
+      }
     };
   }
-  document.body.appendChild(modal);
+  root.appendChild(modal);
 }
 
-/* AUTH UI refresh */
-function refreshAuthUI(){
-  const has = !!state.token;
-  document.getElementById('auth-buttons').style.display = has ? 'none' : 'flex';
-  document.getElementById('user-actions').style.display = has ? 'flex' : 'none';
-  document.getElementById('welcome').textContent = has ? ('Welcome, ' + (state.user && state.user.email ? state.user.email : 'User')) : 'Not signed in';
-  if(has) document.getElementById('user-email').textContent = state.user && state.user.email ? state.user.email : '';
+/* ---------- UI header state ---------- */
+function refreshHeader(){
+  const isAuth = !!state.token;
+  document.getElementById('welcome').textContent = isAuth ? ('Signed in: ' + (state.user && state.user.email ? state.user.email : 'User')) : 'Not signed in';
+  document.getElementById('btn-login').style.display = isAuth ? 'none' : '';
+  document.getElementById('btn-register').style.display = isAuth ? 'none' : '';
+  document.getElementById('btn-cart').style.display = isAuth ? '' : '';
 }
 
-/* Utilities */
+/* ---------- Misc utils ---------- */
+function jsonHeaders(){ return { 'Content-Type': 'application/json' }; }
 function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;'}[m])); }
+function formatPrice(p){ return '$' + Number(p).toFixed(2); }
 
-/* Initialization */
+/* ---------- initial load ---------- */
 (async function init(){
-  await loadProductsFromApi();
-  renderProducts();
-  loadCart();
-  refreshAuthUI();
+  await loadProducts();
+  renderProductCards();
+  renderCart();
+  refreshHeader();
 })();
 
 </script>
