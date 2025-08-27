@@ -2,27 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Noahjo Shop — Galactic Storefront (Single File)</title>
+  <title>Noahjo Shop — Galactic Storefront</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="description" content="Noahjo Shop — Galactic gaming storefront demo" />
   <style>
-    /* --- Galaxy / Theme (matches React look) --- */
     :root{ --bg-1:#040617; --bg-2:#071227; --accent-a:#6e47ff; --accent-b:#33c1ff; --accent-c:#ff7eb6; --muted:rgba(255,255,255,0.76); }
-    html,body{height:100%;}
-    body{margin:0; font-family:Inter,system-ui,Arial,Helvetica,sans-serif; color:#eaf6ff; background: radial-gradient(1200px 600px at 10% 10%, rgba(110,71,255,0.12), transparent 7%), radial-gradient(800px 400px at 90% 90%, rgba(255,126,182,0.06), transparent 6%), linear-gradient(180deg,var(--bg-1),var(--bg-2)); -webkit-font-smoothing:antialiased; padding:18px}
-
-    .stars{ position:fixed; inset:0; z-index:-3; background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.02) 1px, transparent 1px); background-size:4px 4px,12px 12px; opacity:0.28 }
+    html,body{height:100%}
+    body{margin:0; font-family:Inter,system-ui,Arial; color:#eaf6ff; background: radial-gradient(1200px 600px at 10% 10%, rgba(110,71,255,0.12), transparent 7%), radial-gradient(800px 400px at 90% 90%, rgba(255,126,182,0.06), transparent 6%), linear-gradient(180deg,var(--bg-1),var(--bg-2)); -webkit-font-smoothing:antialiased; padding:18px}
+    .stars{ position:fixed; inset:0; z-index:-3; background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.02) 1px, transparent 1px); background-size:6px 6px,14px 14px; opacity:0.24 }
     .galaxy{ position:fixed; inset:0; z-index:-2; pointer-events:none }
     .blob{ position:absolute; border-radius:50%; filter: blur(60px); opacity:0.28; }
     .blob.a{ width:520px; height:520px; left:-120px; top:-80px; background: linear-gradient(135deg,var(--accent-a),var(--accent-b)); }
     .blob.b{ width:420px; height:420px; right:-80px; top:40px; background: linear-gradient(135deg,var(--accent-c),#7afcff); }
-    @keyframes drift{0%{transform:translateY(0) translateX(0)}50%{transform:translateY(-12px) translateX(8px)}100%{transform:translateY(0) translateX(0)}}
-    .blob.a,.blob.b{ animation: drift 16s ease-in-out infinite }
 
-    /* topbar */
     .topbar{ position:sticky; top:0; display:flex; align-items:center; gap:16px; padding:12px 18px; backdrop-filter: blur(6px); background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent); border-bottom:1px solid rgba(255,255,255,0.03); z-index:50 }
     .brand{ display:flex; gap:12px; align-items:center; cursor:pointer }
-    .logo{ width:54px; height:54px; border-radius:12px; display:grid; place-items:center; background: linear-gradient(135deg,var(--accent-a),var(--accent-b)); font-weight:800; box-shadow:0 10px 30px rgba(110,71,255,0.12) }
+    .logo{ width:54px; height:54px; border-radius:12px; display:grid; place-items:center; background: linear-gradient(135deg,var(--accent-a),var(--accent-b)); font-weight:800 }
     .brand h1{ margin:0; font-size:18px }
     .brand p{ margin:0; font-size:12px; color:var(--muted) }
 
@@ -32,7 +27,6 @@
 
     .card{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius:14px; padding:16px; border:1px solid rgba(255,255,255,0.04); box-shadow: 0 10px 30px rgba(3,8,25,0.2) }
 
-    /* products */
     .products-grid{ display:grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap:16px; margin-top:12px }
     .product-card{ border-radius:12px; overflow:hidden; transition: transform .28s cubic-bezier(.2,.9,.2,1), box-shadow .28s; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.03); cursor:pointer }
     .product-card:hover{ transform:translateY(-10px) rotate(-0.6deg); box-shadow: 0 30px 80px rgba(0,0,0,0.6) }
@@ -47,7 +41,6 @@
     .pill:hover{ transform:translateY(-3px) }
     .pill.active{ background: linear-gradient(90deg,var(--accent-a),var(--accent-b)); color:white }
 
-    /* modal */
     .modal-backdrop{ position:fixed; inset:0; background:rgba(2,6,18,0.72); display:flex; align-items:center; justify-content:center; z-index:9999; padding:20px }
     .modal{ width:100%; max-width:980px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015)); border-radius:14px; padding:18px; border:1px solid rgba(255,255,255,0.04); max-height:86vh; overflow:auto; animation: pop .18s ease }
     @keyframes pop{ from{ transform:translateY(8px) scale(.99); opacity:0 } to{ transform:none; opacity:1 } }
@@ -74,11 +67,8 @@
     button.ghost{ background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.06) }
     .tiny{ font-size:12px; color:var(--muted) }
 
-    /* cart drawer */
     .drawer{ position:fixed; right:0; top:0; height:100%; width:380px; max-width:92vw; background:linear-gradient(180deg, rgba(4,6,20,0.96), rgba(2,8,12,0.98)); box-shadow: -30px 0 80px rgba(0,0,0,0.6); transform:translateX(100%); transition: transform .26s cubic-bezier(.2,.9,.2,1); z-index:120 }
     .drawer.open{ transform:translateX(0); }
-
-    /* small helpers */
     .row{ display:flex; gap:12px; align-items:center }
   </style>
 </head>
@@ -161,16 +151,7 @@
   <div id="cart-drawer" class="drawer" aria-hidden="true"></div>
 
   <script>
-  /* Single-file storefront --- visual layout taken from the React example you provided.
-     All features included: categories, modal product detail + carousel, reviews (API-first),
-     cart, register/login two-step (send code -> confirm), inline messages, post-checkout chat fallback.
-     Configure API_BASE at top of file with window.API_BASE before page load if your backend is remote.
-  */
-
-  const API_BASE = (window.API_BASE || location.origin).replace(/\/$/, '');
-  const USE_API = true; // set false for local-only demo
-
-  // --- seed products (you can add images paths here) ---
+  // ---------- CONFIG / SEED (edit here to add product photos directly in code) ----------
   const SEED_PRODUCTS = [
     { id: 'prod-1', title: 'Nebula Headset', category: 'Accessories', price: 79.99, short_desc: 'Wireless headset with spatial audio and nebula lighting.', long_desc: 'Immersive over-ear headset built for long sessions. 50mm drivers, low-latency wireless mode, breathable cushions and nebula RGB.', images: ['/images/headset-1.jpg','/images/headset-2.jpg'] },
     { id: 'prod-2', title: 'Void Runner Hoodie', category: 'Apparel', price: 49.99, short_desc: 'Comfort-fit hoodie with glow-in-dark print.', long_desc: 'Premium cotton-blend hoodie with reflective galaxy print.', images: ['/images/hoodie-1.jpg'] },
@@ -178,24 +159,27 @@
     { id: 'prod-4', title: 'Cosmo Lamp', category: 'Gear', price: 34.99, short_desc: 'Ambient lamp projecting soft galaxy patterns.', long_desc: 'USB-C powered lamp with multiple brightness modes.', images: ['/images/lamp-1.jpg'] }
   ];
 
+  // use backend API when available; registration requires API
+  const API_BASE = (window.API_BASE || location.origin).replace(/\/$/, '');
+  const USE_API = true;
+
   const TOKEN_KEY = 'nj_token';
   let state = { token: localStorage.getItem(TOKEN_KEY) || null, user: null, products: [], cart: [] };
 
-  function el(q){ return document.querySelector(q); }
-  function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"]/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
-  function formatPrice(p){ return '$' + Number(p).toFixed(2); }
-
-  function parseJwt(token){ try{ const p = token.split('.')[1]; return JSON.parse(atob(p.replace(/-/g,'+').replace(/_/g,'/'))); } catch(e){ return null } }
+  function parseJwt(token){ try{ const p = token.split('.')[1]; return JSON.parse(atob(p.replace(/-/g,'+').replace(/_/g,'/'))); }catch(e){ return null } }
   function setToken(token){ state.token = token; if(token) localStorage.setItem(TOKEN_KEY, token); else localStorage.removeItem(TOKEN_KEY); state.user = token ? parseJwt(token) : null; refreshHeader(); }
   setToken(state.token);
 
+  function el(q){ return document.querySelector(q); }
+  function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>\"]/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+  function formatPrice(p){ return '$' + Number(p).toFixed(2); }
   function authHeader(){ return state.token ? { 'Authorization': 'Bearer ' + state.token } : {}; }
   function jsonHeaders(){ return { 'Content-Type': 'application/json' }; }
 
   function showInlineMsg(text, timeout=6000){ const elMsg = el('#checkout-msg'); if(!elMsg) return; elMsg.style.display = 'block'; elMsg.textContent = text; if(timeout) setTimeout(()=>{ elMsg.style.display = 'none'; }, timeout); }
 
-  // --- load products (api fallback to seed) ---
-  async function loadProducts(){ const root = el('#products-root'); root.innerHTML = ''; try{ if(USE_API){ const res = await fetch(API_BASE + '/api/products'); if(res.ok){ const data = await res.json(); state.products = (Array.isArray(data) && data.length) ? data : SEED_PRODUCTS.slice(); renderCategories(); renderProductCards(); return; } } }catch(e){ /* silent fallback */ }
+  // ---------- PRODUCTS: try API, otherwise fallback to seed ----------
+  async function loadProducts(){ const root = el('#products-root'); root.innerHTML = '<div class="tiny">Loading…</div>'; if(USE_API){ try{ const res = await fetch(API_BASE + '/api/products'); if(res.ok){ const data = await res.json(); state.products = data.length ? data : SEED_PRODUCTS.slice(); renderCategories(); renderProductCards(); return; } }catch(e){ /* fall back silently */ } }
     state.products = SEED_PRODUCTS.slice(); renderCategories(); renderProductCards(); }
 
   function renderCategories(){ const root = el('#categories'); root.innerHTML = ''; const cats = Array.from(new Set(state.products.map(p=>p.category||'Other'))).filter(Boolean).sort(); const all = document.createElement('button'); all.className='pill active'; all.textContent='All'; all.onclick = ()=>{ document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active')); all.classList.add('active'); renderProductCards(); }; root.appendChild(all); for(const c of cats){ const b=document.createElement('button'); b.className='pill'; b.textContent=c; b.onclick = ()=>{ document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderProductCards(); }; root.appendChild(b); } }
@@ -214,8 +198,7 @@
             <button data-add="${p.id}">Add</button>
           </div>
         </div>
-      </div>`;
-      root.appendChild(card);
+      </div>`; root.appendChild(card);
   }
   // attach delegated handlers for the new cards
   root.querySelectorAll('[data-open]').forEach(btn=> btn.addEventListener('click', (e)=>{ e.stopPropagation(); openProduct(btn.getAttribute('data-open')); }));
@@ -256,7 +239,7 @@
 
   function deleteReviewLocal(productId, localId){ const key = 'nj_reviews_' + productId; const arr = JSON.parse(localStorage.getItem(key) || '[]'); const filtered = arr.filter(r=>!(r._localId && String(r._localId) === String(localId))); localStorage.setItem(key, JSON.stringify(filtered)); }
 
-  // --- cart ---
+  // ---------- CART ----------
   function loadCart(){ try{ const raw = localStorage.getItem('nj_cart'); state.cart = raw ? JSON.parse(raw) : []; }catch(e){ state.cart = []; } renderCart(); }
   function saveCart(){ localStorage.setItem('nj_cart', JSON.stringify(state.cart)); renderCart(); }
   function addToCart(id, qty){ const p = state.products.find(x=>x.id===id); if(!p){ showInlineMsg('Product not found'); return; } const ex = state.cart.find(x=>x.id===id); if(ex) ex.qty += qty; else state.cart.push({ id:p.id, title:p.title, price:Number(p.price), qty }); saveCart(); openDrawer(); }
@@ -287,8 +270,8 @@
     d.querySelector('#drawer-checkout').onclick = ()=> checkout();
   }
 
-  // --- checkout (server creates stripe session) ---
-  async function checkout(){ if(state.cart.length===0){ showInlineMsg('Your cart is empty — add items before checkout.'); return; } if(!state.token){ showInlineMsg('Please log in to proceed to checkout.'); openModal('login'); return; } const items = state.cart.map(i=>({ id:i.id, title:i.title, price:i.price, qty:i.qty })); el('#checkout-msg').textContent = 'Creating checkout session...'; el('#checkout-msg').style.display='block'; if(USE_API){ try{ const res = await fetch(API_BASE + '/api/create-checkout-session', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ items }) }); const j = await res.json(); if(!res.ok) throw new Error(j.error||'Failed'); if(j.url){ window.location.href = j.url; } else { showInlineMsg('No checkout URL returned from server.'); } }catch(err){ showInlineMsg('Checkout error: ' + (err.message||err)); } } else { showInlineMsg('Checkout requires backend. Enable server to complete payment.'); } }
+  // --- checkout (Stripe) ---
+  async function checkout(){ if(state.cart.length===0){ showInlineMsg('Your cart is empty — add items before checkout.'); return; } if(!state.token){ showInlineMsg('Please log in to proceed to checkout.'); openModal('login'); return; } const items = state.cart.map(i=>({ id:i.id, title:i.title, price:i.price, qty:i.qty })); el('#checkout-msg').textContent = 'Creating checkout session...'; el('#checkout-msg').style.display = 'block'; if(USE_API){ try{ const res = await fetch(API_BASE + '/api/create-checkout-session', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ items }) }); const j = await res.json(); if(!res.ok) throw new Error(j.error||'Failed'); if(j.url){ window.location.href = j.url; } else { showInlineMsg('No checkout URL returned from server.'); } }catch(err){ showInlineMsg('Checkout error: ' + (err.message||err)); } } else { showInlineMsg('Checkout requires backend. Enable server to complete payment.'); } }
 
   // --- auth API wrappers ---
   async function apiRegister(email,password,code){ if(!USE_API) return { ok:false, error:'Enable server to register' }; try{ const res = await fetch(API_BASE + '/api/auth/register', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password, verification_code: code }) }); const j = await res.json(); if(!res.ok) return { ok:false, error: j && j.error ? j.error : 'Register failed' }; return { ok:true, token: j.token }; }catch(e){ return { ok:false, error:'Network error: unable to reach ' + API_BASE }; } }
@@ -305,16 +288,14 @@
     if(mode === 'login'){
       box.innerHTML = `<h3>Login</h3><div style="margin-top:10px"><input id="m-email" placeholder="email" /></div><div style="margin-top:8px"><input id="m-pass" placeholder="password" type="password" /></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="m-close" class="ghost">Close</button><button id="m-login">Login</button></div><pre id="m-res" class="tiny" style="margin-top:8px"></pre>`;
       backdrop.appendChild(box); root.appendChild(backdrop);
-      box.querySelector('#m-close').onclick = ()=> root.innerHTML = '';
+      box.querySelector('#m-close').onclick = ()=> root.innerHTML = ''; 
       box.querySelector('#m-login').onclick = async ()=>{ const email = box.querySelector('#m-email').value.trim(); const pw = box.querySelector('#m-pass').value; if(!email||!pw){ box.querySelector('#m-res').textContent = 'Email & password required'; return; } box.querySelector('#m-res').textContent = 'Logging in...'; const r = await apiLogin(email,pw); if(!r.ok){ box.querySelector('#m-res').textContent = r.error; } else { setToken(r.token); root.innerHTML = ''; showInlineMsg('Logged in'); } };
     } else {
       box.innerHTML = `<h3>Register</h3><div style="margin-top:10px"><input id="r-email" placeholder="email" /></div><div style="margin-top:8px"><input id="r-pass" placeholder="password" type="password" /></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="r-close" class="ghost">Close</button><button id="r-send-code">Send code</button></div><pre id="r-res" class="tiny" style="margin-top:8px"></pre>`;
       backdrop.appendChild(box); root.appendChild(backdrop);
       box.querySelector('#r-close').onclick = ()=> root.innerHTML = '';
       box.querySelector('#r-send-code').onclick = async ()=>{ const email = box.querySelector('#r-email').value.trim(); const pw = box.querySelector('#r-pass').value; if(!email || !pw){ box.querySelector('#r-res').textContent = 'Email and password are required'; return; } box.querySelector('#r-res').textContent = 'Sending verification code...'; const r = await requestVerifyCode(email); if(!r.ok){ box.querySelector('#r-res').textContent = r.error + '
-If your backend is on a different host, set window.API_BASE before loading this page.'; } else { // show code entry
-          renderCodeEntry(email,pw);
-        } };
+If your backend is on a different host, set window.API_BASE before loading this page.'; } else { renderCodeEntry(email,pw); } };
     }
 
     backdrop.addEventListener('click', ev=>{ if(ev.target===backdrop) root.innerHTML = ''; });
@@ -326,14 +307,13 @@ If your backend is on a different host, set window.API_BASE before loading this 
     } }catch(e){ console.error(e); } }
 
   function openChatModal(orderId, partnerEmail){ const root = el('#modal-root'); root.innerHTML=''; const b = document.createElement('div'); b.className='modal-backdrop'; const box = document.createElement('div'); box.className='modal'; box.innerHTML = `<h3>Order #${orderId} — Chat</h3><div style="margin-top:12px" id="chat-messages" class="chat-box"></div><div style="display:flex;gap:8px;margin-top:8px"><input id="chat-input" placeholder="Message..." style="flex:1" /><button id="chat-send">Send</button></div>`; b.appendChild(box); root.appendChild(b);
-    // fallback localStorage chat
     const key = 'nj_chat_order_' + orderId; const messages = JSON.parse(localStorage.getItem(key)||'[]'); const list = box.querySelector('#chat-messages'); list.innerHTML = ''; messages.forEach(m=>{ const elm = document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(m.sender||'user')} • ${new Date(m.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(m.text)}</div>`; list.appendChild(elm); }); box.querySelector('#chat-send').onclick = ()=>{ const text = box.querySelector('#chat-input').value.trim(); if(!text) return; const msg = { sender: (state.user&&state.user.email)||'you', text, created_at: new Date().toISOString() }; messages.push(msg); localStorage.setItem(key, JSON.stringify(messages)); const elm = document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(msg.sender)} • ${new Date(msg.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(msg.text)}</div>`; list.appendChild(elm); box.querySelector('#chat-input').value=''; list.scrollTop = list.scrollHeight; };
     b.addEventListener('click', ev=>{ if(ev.target===b) root.innerHTML=''; }); }
 
   // --- header refresh ---
   function refreshHeader(){ const elm = document.getElementById('signed-as'); if(state.token && state.user && state.user.email) elm.textContent = 'Signed in: ' + state.user.email; else elm.textContent = 'Not signed in'; const acctInfo = document.getElementById('acct-info'); if(state.token && state.user){ acctInfo.innerHTML = `<div class="tiny">${escapeHtml(state.user.email)}</div><div style="margin-top:8px"><button class="ghost" id="logout">Logout</button></div>`; document.getElementById('logout').onclick = ()=>{ setToken(null); }; } else { acctInfo.innerHTML=''; } }
 
-  // --- UI bindings ---
+  // --- UI bindings & init ---
   document.addEventListener('DOMContentLoaded', ()=>{
     el('#btn-refresh').addEventListener('click', ()=> loadProducts());
     el('#btn-login').addEventListener('click', ()=> openModal('login'));
@@ -345,8 +325,15 @@ If your backend is on a different host, set window.API_BASE before loading this 
     el('#btn-cart').addEventListener('click', ()=> openDrawer());
     el('#search').addEventListener('input', ()=> renderProductCards());
 
-    // initial load
     (async function init(){ await loadProducts(); try{ const raw = localStorage.getItem('nj_cart'); state.cart = raw?JSON.parse(raw):[]; }catch(e){ state.cart=[]; } renderCart(); try{ const t = localStorage.getItem(TOKEN_KEY); state.user = t?parseJwt(t):null; }catch(e){} refreshHeader(); await handleCheckoutReturn(); })();
 
-    // ensure drawer element exists - attach click outside to close
-    c
+    // close drawer when clicking outside
+    document.addEventListener('click', (ev)=>{ const d = document.getElementById('cart-drawer'); if(!d) return; if(d.classList.contains('open')){ const inside = d.contains(ev.target); const btn = el('#btn-cart'); if(!inside && ev.target !== btn) closeDrawer(); } });
+
+  });
+
+  window.addEventListener('beforeunload', ()=>{ try{ localStorage.setItem('nj_cart', JSON.stringify(state.cart)); }catch(e){} });
+  </script>
+</body>
+</html>
+
