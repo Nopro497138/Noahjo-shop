@@ -1,22 +1,3 @@
-<!--
-  Noahjo Shop — Single-file frontend (index.html)
-  ------------------------------------------------
-  - This is the full frontend (English) you asked for, with:
-    • Galaxy look + responsive layout
-    • Categories (stylish pills)
-    • Product modal with carousel, arrows & dots
-    • Reviews tab (posts to /api if available, falls back to localStorage)
-    • Login/Register modals (posts to /api if available, falls back to local dev auth)
-    • Cart + Checkout flow (calls /api/create-checkout-session if available; otherwise shows a test checkout flow)
-    • Live chat after checkout using Socket.IO if available; otherwise uses localStorage fallback
-    • Images: the frontend includes a seeded sample product list (so products always show) — you can edit the `SEED_PRODUCTS` array below to change images/titles/etc.
-
-  IMPORTANT: A static index.html cannot host a real SQLite DB, keep Stripe secret keys, or accept webhook calls.
-  For full production features (Stripe checkout, persistent reviews in SQLite, real auth, Socket.IO chat), run the Node server (server.js) I provided earlier — that file creates the SQLite DB and exposes the /api endpoints.
-
-  If you want this to be a working demo without any server, this file will run in "demo mode" using localStorage and the seed products.
--->
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -44,11 +25,11 @@
     .grid{ display:grid; grid-template-columns: 1fr 360px; gap:20px; align-items:start }
     @media (max-width:980px){ .grid{ grid-template-columns: 1fr } .top-actions{ display:none } }
 
-    .card{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius:14px; padding:16px; border:1px solid rgba(255,255,255,0.04) }
+    .card{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius:14px; padding:16px; border:1px solid rgba(255,255,255,0.04); box-shadow: 0 10px 30px rgba(3,8,25,0.2) }
 
     .products-grid{ display:grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap:16px; margin-top:12px }
-    .product-card{ border-radius:12px; overflow:hidden; transition: transform .18s ease, box-shadow .18s; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.03) }
-    .product-card:hover{ transform:translateY(-8px); box-shadow: 0 30px 60px rgba(0,0,0,0.6) }
+    .product-card{ border-radius:12px; overflow:hidden; transition: transform .28s cubic-bezier(.2,.9,.2,1), box-shadow .28s; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.03) }
+    .product-card:hover{ transform:translateY(-10px) rotate(-0.6deg); box-shadow: 0 30px 80px rgba(0,0,0,0.6) }
     .product-media{ width:100%; height:160px; object-fit:cover; background:#061224 }
     .product-body{ padding:12px; display:flex; gap:12px; align-items:center; justify-content:space-between }
     .meta h3{ margin:0; font-size:16px }
@@ -56,11 +37,14 @@
     .price{ font-weight:800; font-size:16px }
 
     .category-pills{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px }
-    .pill{ padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.02); cursor:pointer }
+    .pill{ padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.02); cursor:pointer; transition: transform .18s }
+    .pill:hover{ transform:translateY(-3px) }
     .pill.active{ background: linear-gradient(90deg,var(--accent-a),var(--accent-b)); color:white }
 
     .modal-backdrop{ position:fixed; inset:0; background:rgba(2,6,18,0.72); display:flex; align-items:center; justify-content:center; z-index:9999; padding:20px }
-    .modal{ width:100%; max-width:980px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015)); border-radius:14px; padding:18px; border:1px solid rgba(255,255,255,0.04); max-height:86vh; overflow:auto }
+    .modal{ width:100%; max-width:980px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015)); border-radius:14px; padding:18px; border:1px solid rgba(255,255,255,0.04); max-height:86vh; overflow:auto; animation: pop .18s ease }
+    @keyframes pop{ from{ transform:translateY(8px) scale(.99); opacity:0 } to{ transform:none; opacity:1 } }
+
     .carousel{ position:relative; border-radius:12px; overflow:hidden; background:#020617; min-height:300px; display:flex; align-items:center; justify-content:center }
     .carousel img{ width:100%; height:100%; object-fit:cover }
     .arrow{ position:absolute; top:50%; transform:translateY(-50%); background: rgba(0,0,0,0.35); border:none; color:white; padding:10px; border-radius:50%; cursor:pointer }
@@ -76,6 +60,8 @@
 
     .chat-box{ display:flex; flex-direction:column; gap:8px; border-radius:8px; background:rgba(0,0,0,0.18); padding:8px; max-height:380px; overflow:auto }
     .message{ padding:8px; border-radius:8px; background:rgba(255,255,255,0.02); }
+
+    .inline-msg{ margin-top:10px; padding:10px; border-radius:8px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); color:var(--muted) }
 
     input, textarea { background:transparent; border:1px solid rgba(255,255,255,0.04); padding:8px; border-radius:8px; color:inherit }
     button{ border:0; padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:700; background: linear-gradient(90deg,var(--accent-a),var(--accent-b)); color:white }
@@ -111,7 +97,6 @@
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div>
               <strong style="font-size:18px">Products</strong>
-              <div class="tiny">Loaded from <code>/api/products</code> — demo fallback enabled</div>
             </div>
             <div style="display:flex;align-items:center;gap:10px">
               <input id="search" type="text" placeholder="Search products..." style="width:220px" />
@@ -141,7 +126,7 @@
             <button id="btn-clear" class="ghost">Clear</button>
           </div>
 
-          <div id="checkout-msg" class="tiny" style="margin-top:10px"></div>
+          <div id="checkout-msg" class="inline-msg" style="display:none"></div>
         </div>
 
         <div class="card" style="margin-top:12px">
@@ -162,7 +147,7 @@
   <div id="modal-root" aria-live="polite"></div>
 
   <script>
-  // ---------- CONFIG / SEED (edit here to add your product photos directly in code) ----------
+  // ---------- CONFIG / SEED (edit here to add product photos directly in code) ----------
   const SEED_PRODUCTS = [
     { id: 'prod-1', title: 'Nebula Headset', category: 'Accessories', price: 79.99, short_desc: 'Wireless headset with spatial audio and nebula lighting.', long_desc: 'Immersive over-ear headset built for long sessions. 50mm drivers, low-latency wireless mode, breathable cushions and nebula RGB.', images: ['/images/headset-1.jpg','/images/headset-2.jpg'] },
     { id: 'prod-2', title: 'Void Runner Hoodie', category: 'Apparel', price: 49.99, short_desc: 'Comfort-fit hoodie with glow-in-dark print.', long_desc: 'Premium cotton-blend hoodie with reflective galaxy print.', images: ['/images/hoodie-1.jpg'] },
@@ -170,8 +155,8 @@
     { id: 'prod-4', title: 'Cosmo Lamp', category: 'Gear', price: 34.99, short_desc: 'Ambient lamp projecting soft galaxy patterns.', long_desc: 'USB-C powered lamp with multiple brightness modes.', images: ['/images/lamp-1.jpg'] }
   ];
 
-  // whether to use server API or fallback demo mode
-  const USE_API = true; // set to false to force demo/local-only mode
+  // use backend API when available; registration requires API
+  const USE_API = true;
 
   const TOKEN_KEY = 'nj_token';
   let state = { token: localStorage.getItem(TOKEN_KEY) || null, user: null, products: [], cart: [] };
@@ -186,8 +171,11 @@
   function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>\"]/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
   function formatPrice(p){ return '$' + Number(p).toFixed(2); }
 
-  // ---------- PRODUCTS: try API, otherwise fallback to seed ----------
-  async function loadProducts(){ const root = el('#products-root'); root.innerHTML = '<div class="tiny">Loading…</div>'; if(USE_API){ try{ const res = await fetch('/api/products'); if(!res.ok) throw new Error('status '+res.status); const data = await res.json(); state.products = data.length ? data : SEED_PRODUCTS; renderCategories(); renderProductCards(); return; }catch(e){ console.warn('API products failed, using seed', e); } }
+  // inline message helper (used instead of alert() for checkout/cart messages)
+  function showInlineMsg(text, timeout=6000){ const elMsg = el('#checkout-msg'); if(!elMsg) return; elMsg.style.display = 'block'; elMsg.textContent = text; if(timeout) setTimeout(()=>{ elMsg.style.display = 'none'; }, timeout); }
+
+  // ---------- PRODUCTS: try API, otherwise fallback to seed (no debug text shown) ----------
+  async function loadProducts(){ const root = el('#products-root'); root.innerHTML = '<div class="tiny">Loading…</div>'; if(USE_API){ try{ const res = await fetch('/api/products'); if(res.ok){ const data = await res.json(); state.products = data.length ? data : SEED_PRODUCTS; renderCategories(); renderProductCards(); return; } }catch(e){ /* fall back silently */ } }
     state.products = SEED_PRODUCTS.slice(); renderCategories(); renderProductCards(); }
 
   function renderCategories(){ const root = el('#categories'); root.innerHTML = ''; const cats = Array.from(new Set(state.products.map(p=>p.category||'Other'))).filter(Boolean).sort(); const all = document.createElement('button'); all.className='pill active'; all.textContent='All'; all.onclick = ()=>{ document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active')); all.classList.add('active'); renderProductCards(); }; root.appendChild(all); for(const c of cats){ const b=document.createElement('button'); b.className='pill'; b.textContent=c; b.onclick = ()=>{ document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderProductCards(); }; root.appendChild(b); } }
@@ -206,8 +194,7 @@
             <button onclick='addToCart("${p.id}",1)'>Add</button>
           </div>
         </div>
-      </div>`; root.appendChild(card); }
-  }
+      </div>`; root.appendChild(card); } }
 
   // ---------- PRODUCT MODAL / REVIEWS / CAROUSEL ----------
   function openProduct(id){ const p = state.products.find(x=>x.id===id); if(!p) return; const root=el('#modal-root'); root.innerHTML=''; const backdrop=document.createElement('div'); backdrop.className='modal-backdrop'; const modal=document.createElement('div'); modal.className='modal'; const imgs=(p.images&&p.images.length)?p.images:['/images/headset-1.jpg']; modal.innerHTML = `
@@ -229,21 +216,19 @@
 
     async function loadReviews(productId){ const list=modal.querySelector('#reviews-list'); list.innerHTML='<div class="tiny">Loading…</div>';
       // try remote first
-      if(USE_API){ try{ const res=await fetch('/api/products/' + encodeURIComponent(productId) + '/reviews'); if(!res.ok) throw new Error('status '+res.status); const rows=await res.json(); renderReviewRows(rows); return; }catch(e){ console.warn('reviews API failed, falling back', e); } }
+      if(USE_API){ try{ const res=await fetch('/api/products/' + encodeURIComponent(productId) + '/reviews'); if(res.ok){ const rows=await res.json(); renderReviewRows(rows); return; } }catch(e){ /* silent fallback */ } }
       // fallback to localStorage
       const local = JSON.parse(localStorage.getItem('nj_reviews_' + productId) || '[]'); renderReviewRows(local);
-      function renderReviewRows(rows){ list.innerHTML=''; if(!rows || rows.length===0) list.innerHTML = '<div class="tiny">No reviews yet</div>'; else{ rows.forEach(r=>{ const block=document.createElement('div'); block.className='review'; block.innerHTML = `<div style="display:flex;justify-content:space-between;font-weight:700;color:var(--muted)"><div>${escapeHtml(r.author_email||'User')}</div><div>${r.rating}★</div></div><div style="margin-top:8px">${escapeHtml(r.text||'')}</div>`; // delete if author
+      function renderReviewRows(rows){ list.innerHTML=''; if(!rows || rows.length===0) list.innerHTML = '<div class="tiny">No reviews yet</div>'; else{ rows.forEach(r=>{ const block=document.createElement('div'); block.className='review'; block.innerHTML = `<div style="display:flex;justify-content:space-between;font-weight:700;color:var(--muted)"><div>${escapeHtml(r.author_email||r.author||'User')}</div><div>${r.rating}★</div></div><div style="margin-top:8px">${escapeHtml(r.text||'')}</div>`; // delete if author
               if(r._canDelete){ const btn=document.createElement('button'); btn.className='ghost'; btn.style.marginTop='8px'; btn.textContent='Delete'; btn.onclick=()=>{ if(!confirm('Delete review?')) return; deleteReviewLocal(productId, r._localId || r.id); loadReviews(productId); }; block.appendChild(btn); }
-              list.appendChild(block); }); }
-      }
+              list.appendChild(block); }); } }
 
-      // show post form if logged in or fallback dev
-      const form = modal.querySelector('#review-form'); if(state.token || !USE_API){ form.innerHTML = `<label class="tiny">Rating (1-5)</label><input id="modal-rev-rating" type="number" min="1" max="5" value="5" style="width:100%;margin-top:6px" /><label class="tiny" style="margin-top:8px">Review</label><textarea id="modal-rev-text" rows="3" style="width:100%;margin-top:6px"></textarea><div style="margin-top:8px"><button id="modal-post-rev">Post review</button></div><pre id="modal-rev-res" class="tiny" style="margin-top:6px"></pre>`; modal.querySelector('#modal-post-rev').onclick = async ()=>{ const rating = Number(modal.querySelector('#modal-rev-rating').value||5); const text = modal.querySelector('#modal-rev-text').value||''; try{ if(USE_API){ const r = await fetch('/api/products/' + encodeURIComponent(productId) + '/reviews', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ rating, text }) }); const j = await r.json(); if(!r.ok) throw new Error(j.error||'Failed'); modal.querySelector('#modal-rev-res').textContent = 'Posted'; await loadReviews(productId); } else { // local fallback
-                const key = 'nj_reviews_' + productId; const arr = JSON.parse(localStorage.getItem(key) || '[]'); const localId = Date.now(); arr.unshift({ _localId: localId, author_email: (state.user && state.user.email) || 'dev@example.com', rating, text, created_at: new Date().toISOString(), _canDelete: true }); localStorage.setItem(key, JSON.stringify(arr)); modal.querySelector('#modal-rev-res').textContent = 'Saved (demo)'; await loadReviews(productId); } }catch(err){ modal.querySelector('#modal-rev-res').textContent = 'Error: ' + (err.message||err); } }; } else { form.innerHTML = '<div class="tiny">Login to post reviews.</div>'; }
+      // show post form if logged in
+      const form = modal.querySelector('#review-form'); if(state.token){ form.innerHTML = `<label class="tiny">Rating (1-5)</label><input id="modal-rev-rating" type="number" min="1" max="5" value="5" style="width:100%;margin-top:6px" /><label class="tiny" style="margin-top:8px">Review</label><textarea id="modal-rev-text" rows="3" style="width:100%;margin-top:6px"></textarea><div style="margin-top:8px"><button id="modal-post-rev">Post review</button></div><pre id="modal-rev-res" class="tiny" style="margin-top:6px"></pre>`; modal.querySelector('#modal-post-rev').onclick = async ()=>{ const rating = Number(modal.querySelector('#modal-rev-rating').value||5); const text = modal.querySelector('#modal-rev-text').value||''; try{ const r = await fetch('/api/products/' + encodeURIComponent(productId) + '/reviews', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ rating, text }) }); const j = await r.json(); if(!r.ok) throw new Error(j.error||'Failed'); modal.querySelector('#modal-rev-res').textContent = 'Posted'; await loadReviews(productId); }catch(err){ modal.querySelector('#modal-rev-res').textContent = 'Error: ' + (err.message||err); } }; } else { form.innerHTML = '<div class="tiny">Login to post reviews.</div>'; }
     }
 
     // add to cart & buy
-    modal.querySelector('#add-to-cart-detail').onclick = ()=>{ addToCart(p.id,1); };
+    modal.querySelector('#add-to-cart-detail').onclick = ()=>{ addToCart(p.id,1); showInlineMsg('Added to cart'); };
     modal.querySelector('#buy-now').onclick = async ()=>{ addToCart(p.id,1); await checkout(); };
 
     modal.querySelector('#close-detail').onclick = ()=>{ root.innerHTML=''; };
@@ -255,45 +240,61 @@
   // ---------- CART ----------
   function loadCart(){ try{ const raw = localStorage.getItem('nj_cart'); state.cart = raw ? JSON.parse(raw) : []; }catch(e){ state.cart = []; } renderCart(); }
   function saveCart(){ localStorage.setItem('nj_cart', JSON.stringify(state.cart)); renderCart(); }
-  function addToCart(id, qty){ const p = state.products.find(x=>x.id===id); if(!p) return alert('Product not found'); const ex = state.cart.find(x=>x.id===id); if(ex) ex.qty += qty; else state.cart.push({ id:p.id, title:p.title, price:Number(p.price), qty }); saveCart(); }
+  function addToCart(id, qty){ const p = state.products.find(x=>x.id===id); if(!p){ showInlineMsg('Product not found'); return; } const ex = state.cart.find(x=>x.id===id); if(ex) ex.qty += qty; else state.cart.push({ id:p.id, title:p.title, price:Number(p.price), qty }); saveCart(); }
   function changeQty(id, delta){ const it = state.cart.find(x=>x.id===id); if(!it) return; it.qty += delta; if(it.qty<=0) state.cart = state.cart.filter(x=>x.id!==id); saveCart(); }
   function renderCart(){ const el = el('#cart-list'); el.innerHTML=''; if(!state.cart || state.cart.length===0){ el.innerHTML = '<div class="tiny">Cart empty</div>'; el('#cart-total') && (el('#cart-total').textContent = '—'); document.getElementById('cart-count').textContent='0'; return; } let total=0; for(const it of state.cart){ total += it.price*it.qty; const row = document.createElement('div'); row.className='cart-item'; const thumb = (state.products.find(p=>p.id===it.id)||{}).images?.[0]||'/images/headset-1.jpg'; row.innerHTML = `<div style="display:flex;gap:8px;align-items:center"><img src="${escapeHtml(thumb)}" style="width:56px;height:40px;object-fit:cover;border-radius:8px"/><div><div style="font-weight:700">${escapeHtml(it.title)}</div><div class="tiny">${it.qty} × ${formatPrice(it.price)}</div></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div style="font-weight:800">${formatPrice(it.price*it.qty)}</div><div style="display:flex;gap:6px"><button class="ghost" onclick='changeQty("${it.id}",-1)'>-</button><button class="ghost" onclick='changeQty("${it.id}",1)'>+</button></div></div>`; el.appendChild(row); } el('#cart-total') && (el('#cart-total').textContent = formatPrice(total)); document.getElementById('cart-count').textContent = state.cart.reduce((s,i)=>s+i.qty,0); }
 
   // ---------- CHECKOUT (Stripe) ----------
-  async function checkout(){ if(state.cart.length===0) return alert('Cart empty'); if(!state.token){ if(confirm('You must be logged in to checkout. Open login?')) openModal('login'); return; } const items = state.cart.map(i=>({ id:i.id, title:i.title, price:i.price, qty:i.qty })); el('#checkout-msg').textContent = 'Creating checkout session...'; if(USE_API){ try{ const res = await fetch('/api/create-checkout-session', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ items }) }); const j = await res.json(); if(!res.ok) throw new Error(j.error||'Failed'); if(j.url){ window.location.href = j.url; } else { el('#checkout-msg').textContent = 'No session URL returned'; } }catch(err){ el('#checkout-msg').textContent = 'Checkout error: ' + (err.message||err); } } else { // demo flow: simulate success and open local chat
-      const fakeSession = 'demo_' + Date.now(); // store a demo order in localStorage
-      const orders = JSON.parse(localStorage.getItem('nj_demo_orders') || '[]'); const order = { id: orders.length+1, stripe_session_id: fakeSession, user_email: (state.user&&state.user.email) || 'dev@example.com', amount_total: Math.round(state.cart.reduce((s,i)=>s+i.price*i.qty,0)*100), currency: 'usd', status:'paid', created_at: new Date().toISOString() }; orders.unshift(order); localStorage.setItem('nj_demo_orders', JSON.stringify(orders)); // clear cart
-      state.cart=[]; saveCart(); // open chat modal
-      openChatModal(order.id, order.user_email); el('#checkout-msg').textContent = 'Demo checkout completed (no Stripe)'; }
+  async function checkout(){ // don't use alerts for checkout steps, show in inline textbox instead
+    if(state.cart.length===0){ showInlineMsg('Your cart is empty — add items before checkout.'); return; }
+    if(!state.token){ // request login inline: open modal but do not use confirm alert
+      showInlineMsg('Please log in to proceed to checkout.'); openModal('login'); return; }
+    const items = state.cart.map(i=>({ id:i.id, title:i.title, price:i.price, qty:i.qty })); el('#checkout-msg').textContent = 'Creating checkout session...'; el('#checkout-msg').style.display = 'block'; if(USE_API){ try{ const res = await fetch('/api/create-checkout-session', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ items }) }); const j = await res.json(); if(!res.ok) throw new Error(j.error||'Failed'); if(j.url){ window.location.href = j.url; } else { showInlineMsg('No checkout URL returned from server.'); } }catch(err){ showInlineMsg('Checkout error: ' + (err.message||err)); } } else { // demo flow
+      showInlineMsg('Checkout requires backend. Enable server to complete payment.'); }
   }
 
-  // ---------- AUTH fallback (tries API; falls back to simple dev storage) ----------
-  async function apiRegister(email, password, code){ if(!USE_API){ // demo register: store in localStorage
-      const users = JSON.parse(localStorage.getItem('nj_demo_users')||'[]'); if(users.find(u=>u.email===email)) return { ok:false, error:'Email already used' }; const id = Date.now(); users.push({ id, email, password }); localStorage.setItem('nj_demo_users', JSON.stringify(users)); // create a fake token (payload only)
-      const token = btoa(JSON.stringify({ id, email })); return { ok:true, token }; }
-    try{ const res = await fetch('/api/auth/register',{ method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email,password, verification_code: 'dev' }) }); const j = await res.json(); if(!res.ok) return { ok:false, error:j.error||'Register failed' }; return { ok:true, token:j.token }; }catch(e){ return { ok:false, error:'Network error' }; } }
+  // ---------- AUTH: registration requires backend (no dev fallback) ----------
+  async function apiRegister(email, password, code){ if(!USE_API) return { ok:false, error:'Registration requires backend API. Enable server for real registration.' };
+    try{ const res = await fetch('/api/auth/register', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password, verification_code: code }) }); const j = await res.json(); if(!res.ok) return { ok:false, error: j && j.error ? j.error : 'Register failed' }; return { ok:true, token: j.token }; }catch(e){ return { ok:false, error: 'Network error' }; } }
 
-  async function apiLogin(email, password){ if(!USE_API){ const users = JSON.parse(localStorage.getItem('nj_demo_users')||'[]'); const u = users.find(x=>x.email===email && x.password===password); if(!u) return { ok:false, error:'Invalid credentials' }; const token = btoa(JSON.stringify({ id:u.id, email:u.email })); return { ok:true, token }; }
-    try{ const res = await fetch('/api/auth/login', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password }) }); const j = await res.json(); if(!res.ok) return { ok:false, error:j.error||'Login failed' }; return { ok:true, token: j.token }; }catch(e){ return { ok:false, error:'Network error' }; } }
+  async function apiLogin(email, password){ if(!USE_API){ // allow demo login only when explicitly disabled server
+      return { ok:false, error:'Login requires backend when demo mode is off' }; }
+    try{ const res = await fetch('/api/auth/login', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password }) }); const j = await res.json(); if(!res.ok) return { ok:false, error: j && j.error ? j.error : 'Login failed' }; return { ok:true, token: j.token }; }catch(e){ return { ok:false, error:'Network error' }; } }
 
-  // ---------- MODALS: login/register ----------
-  function openModal(mode){ const root = el('#modal-root'); root.innerHTML=''; const backdrop=document.createElement('div'); backdrop.className='modal-backdrop'; const box=document.createElement('div'); box.className='modal'; if(mode==='login'){ box.innerHTML = `<h3>Login</h3><div style="margin-top:10px"><input id="m-email" placeholder="email" /></div><div style="margin-top:8px"><input id="m-pass" placeholder="password" type="password" /></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="m-close" class="ghost">Close</button><button id="m-login">Login</button></div><pre id="m-res" class="tiny" style="margin-top:8px"></pre>`; backdrop.appendChild(box); root.appendChild(backdrop); box.querySelector('#m-close').onclick = ()=> root.innerHTML=''; box.querySelector('#m-login').onclick = async ()=>{ const email = box.querySelector('#m-email').value.trim(); const pw = box.querySelector('#m-pass').value; if(!email||!pw) return alert('Email & password required'); const r = await apiLogin(email,pw); if(!r.ok){ box.querySelector('#m-res').textContent = r.error; } else { setToken(r.token); root.innerHTML=''; alert('Logged in'); } }; }
-  else { box.innerHTML = `<h3>Register</h3><div style="margin-top:10px"><input id="r-email" placeholder="email" /></div><div style="margin-top:8px"><input id="r-pass" placeholder="password" type="password" /></div><div style="margin-top:8px"><input id="r-code" placeholder="verification code (dev)" /></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="r-close" class="ghost">Close</button><button id="r-register">Register</button></div><pre id="r-res" class="tiny" style="margin-top:8px"></pre>`; backdrop.appendChild(box); root.appendChild(backdrop); box.querySelector('#r-close').onclick = ()=> root.innerHTML=''; box.querySelector('#r-register').onclick = async ()=>{ const email = box.querySelector('#r-email').value.trim(); const pw = box.querySelector('#r-pass').value; const code = box.querySelector('#r-code').value.trim(); if(!email||!pw||!code) return alert('Email/password/code required'); const r = await apiRegister(email,pw,code); if(!r.ok){ box.querySelector('#r-res').textContent = r.error; } else { setToken(r.token); root.innerHTML=''; alert('Registered'); } }; }
-    backdrop.addEventListener('click', ev=>{ if(ev.target===backdrop) root.innerHTML=''; }); }
+  // request verification code (sends email) - expects backend endpoint
+  async function requestVerifyCode(email){ if(!USE_API) return { ok:false, error:'Server required to send verification email' }; try{ const res = await fetch('/api/auth/request-verify', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email }) }); const j = await res.json(); if(!res.ok) return { ok:false, error: j && j.error ? j.error : 'Request failed' }; return { ok:true, info: j }; }catch(e){ return { ok:false, error:'Network error' }; } }
 
-  // ---------- POST-CHECKOUT: handle demo / real ---------
-  async function handleCheckoutReturn(){ try{ const url = new URL(location.href); const s = url.searchParams.get('checkout_success'); const session_id = url.searchParams.get('session_id'); if(s && session_id){ // try to resolve via API
-      if(USE_API){ const res = await fetch('/api/orders/by-session/' + encodeURIComponent(session_id)); if(res.ok){ const order = await res.json(); state.cart = []; saveCart(); openChatModal(order.id, order.user_email || (state.user && state.user.email)); url.searchParams.delete('checkout_success'); url.searchParams.delete('session_id'); history.replaceState({}, document.title, url.toString()); return; } }
-      // demo: find in local demo orders
+  // ---------- MODALS: login/register (register: send code then confirm) ----------
+  function openModal(mode){ const root = el('#modal-root'); root.innerHTML=''; const backdrop=document.createElement('div'); backdrop.className='modal-backdrop'; const box=document.createElement('div'); box.className='modal'; if(mode==='login'){ box.innerHTML = `<h3>Login</h3><div style="margin-top:10px"><input id="m-email" placeholder="email" /></div><div style="margin-top:8px"><input id="m-pass" placeholder="password" type="password" /></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="m-close" class="ghost">Close</button><button id="m-login">Login</button></div><pre id="m-res" class="tiny" style="margin-top:8px"></pre>`; backdrop.appendChild(box); root.appendChild(backdrop); box.querySelector('#m-close').onclick = ()=> root.innerHTML=''; box.querySelector('#m-login').onclick = async ()=>{ const email = box.querySelector('#m-email').value.trim(); const pw = box.querySelector('#m-pass').value; if(!email||!pw){ box.querySelector('#m-res').textContent = 'Email & password required'; return; } const r = await apiLogin(email,pw); if(!r.ok){ box.querySelector('#m-res').textContent = r.error; } else { setToken(r.token); root.innerHTML=''; showInlineMsg('Logged in'); } }; }
+  else { // register flow: two-step — request code, then submit registration with code
+    box.innerHTML = `<h3>Register</h3>
+      <div style="margin-top:10px"><input id="r-email" placeholder="email" /></div>
+      <div style="margin-top:8px"><input id="r-pass" placeholder="password" type="password" /></div>
+      <div id="r-code-row" style="margin-top:8px;display:none"><input id="r-code" placeholder="verification code" /></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button id="r-close" class="ghost">Close</button>
+        <button id="r-send-code">Send code</button>
+        <button id="r-register">Register</button>
+      </div>
+      <pre id="r-res" class="tiny" style="margin-top:8px"></pre>`;
+    backdrop.appendChild(box); root.appendChild(backdrop);
+    box.querySelector('#r-close').onclick = ()=> root.innerHTML='';
+    box.querySelector('#r-send-code').onclick = async ()=>{ const email = box.querySelector('#r-email').value.trim(); if(!email){ box.querySelector('#r-res').textContent = 'Enter email first'; return; } box.querySelector('#r-res').textContent = 'Sending verification code...'; const r = await requestVerifyCode(email); if(!r.ok){ box.querySelector('#r-res').textContent = r.error; } else { box.querySelector('#r-res').textContent = 'Verification code sent — check your email.'; box.querySelector('#r-code-row').style.display = 'block'; } };
+    box.querySelector('#r-register').onclick = async ()=>{ const email = box.querySelector('#r-email').value.trim(); const pw = box.querySelector('#r-pass').value; const code = box.querySelector('#r-code').value.trim(); if(!email||!pw||!code){ box.querySelector('#r-res').textContent = 'Email, password and code required'; return; } box.querySelector('#r-res').textContent = 'Registering...'; const res = await apiRegister(email,pw,code); if(!res.ok){ box.querySelector('#r-res').textContent = res.error; } else { setToken(res.token); root.innerHTML=''; showInlineMsg('Registered and logged in'); } };
+  }
+  backdrop.addEventListener('click', ev=>{ if(ev.target===backdrop) root.innerHTML=''; }); }
+
+  // ---------- POST-CHECKOUT handling ----------
+  async function handleCheckoutReturn(){ try{ const url = new URL(location.href); const s = url.searchParams.get('checkout_success'); const session_id = url.searchParams.get('session_id'); if(s && session_id){ if(USE_API){ try{ const res = await fetch('/api/orders/by-session/' + encodeURIComponent(session_id)); if(res.ok){ const order = await res.json(); state.cart = []; saveCart(); openChatModal(order.id, order.user_email || (state.user && state.user.email)); url.searchParams.delete('checkout_success'); url.searchParams.delete('session_id'); history.replaceState({}, document.title, url.toString()); return; } }catch(e){ } }
+      // local demo check
       const orders = JSON.parse(localStorage.getItem('nj_demo_orders')||'[]'); const ord = orders.find(o=>o.stripe_session_id===session_id); if(ord){ state.cart=[]; saveCart(); openChatModal(ord.id, ord.user_email); url.searchParams.delete('checkout_success'); url.searchParams.delete('session_id'); history.replaceState({}, document.title, url.toString()); }
     } }catch(e){ console.error(e); } }
 
-  // ---------- CHAT modal (uses Socket.IO if available) ----------
-  let socket = null; // lazy
+  // ---------- CHAT modal (Socket.IO or fallback) ----------
+  let socket = null;
   function openChatModal(orderId, partnerEmail){ const root = el('#modal-root'); root.innerHTML=''; const b=document.createElement('div'); b.className='modal-backdrop'; const box=document.createElement('div'); box.className='modal'; box.innerHTML = `<h3>Order #${orderId} — Chat</h3><div style="margin-top:12px" id="chat-messages" class="chat-box"></div><div style="display:flex;gap:8px;margin-top:8px"><input id="chat-input" placeholder="Message..." style="flex:1" /><button id="chat-send">Send</button></div>`; b.appendChild(box); root.appendChild(b);
-    // try socket.io first
-    try{ if(typeof io !== 'undefined' && state.token){ if(!socket) socket = io({ auth: { token: state.token } }); socket.emit('joinOrder', orderId, (resp)=>{ if(resp && resp.error){ box.querySelector('#chat-messages').innerHTML = '<div class="tiny">'+escapeHtml(resp.error)+'</div>'; return; } const msgs = resp.messages || []; const list = box.querySelector('#chat-messages'); list.innerHTML=''; msgs.forEach(m=>{ const elm=document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(m.sender_role||'user')} • ${new Date(m.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(m.text)}</div>`; list.appendChild(elm); }); socket.off('message'); socket.on('message', msg=>{ const list=box.querySelector('#chat-messages'); const elm=document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(msg.sender_role||'user')} • ${new Date(msg.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(msg.text)}</div>`; list.appendChild(elm); list.scrollTop = list.scrollHeight; }); box.querySelector('#chat-send').onclick = ()=>{ const text = box.querySelector('#chat-input').value.trim(); if(!text) return; socket.emit('message', { orderId, text }, (res)=>{ if(res && res.ok){ box.querySelector('#chat-input').value = ''; } else { alert('Send failed'); } }); }; }); return; } }catch(e){ console.warn('Socket.io unavailable or failed', e); }
-    // fallback: localStorage based chat room
+    try{ if(typeof io !== 'undefined' && state.token){ if(!socket) socket = io({ auth: { token: state.token } }); socket.emit('joinOrder', orderId, (resp)=>{ if(resp && resp.error){ box.querySelector('#chat-messages').innerHTML = '<div class="tiny">'+escapeHtml(resp.error)+'</div>'; return; } const msgs = resp.messages || []; const list = box.querySelector('#chat-messages'); list.innerHTML=''; msgs.forEach(m=>{ const elm=document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(m.sender_role||'user')} • ${new Date(m.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(m.text)}</div>`; list.appendChild(elm); }); socket.off('message'); socket.on('message', msg=>{ const list=box.querySelector('#chat-messages'); const elm=document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(msg.sender_role||'user')} • ${new Date(msg.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(msg.text)}</div>`; list.appendChild(elm); list.scrollTop = list.scrollHeight; }); box.querySelector('#chat-send').onclick = ()=>{ const text = box.querySelector('#chat-input').value.trim(); if(!text) return; socket.emit('message', { orderId, text }, (res)=>{ if(res && res.ok){ box.querySelector('#chat-input').value = ''; } else { showInlineMsg('Send failed'); } }); }; }); return; } }catch(e){ }
+    // fallback localStorage chat
     const key = 'nj_chat_order_' + orderId; const messages = JSON.parse(localStorage.getItem(key)||'[]'); const list = box.querySelector('#chat-messages'); list.innerHTML=''; messages.forEach(m=>{ const elm=document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(m.sender||'user')} • ${new Date(m.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(m.text)}</div>`; list.appendChild(elm); }); box.querySelector('#chat-send').onclick = ()=>{ const text = box.querySelector('#chat-input').value.trim(); if(!text) return; const msg = { sender: (state.user&&state.user.email)||'you', text, created_at: new Date().toISOString() }; messages.push(msg); localStorage.setItem(key, JSON.stringify(messages)); const elm=document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(msg.sender)} • ${new Date(msg.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(msg.text)}</div>`; list.appendChild(elm); box.querySelector('#chat-input').value=''; list.scrollTop = list.scrollHeight; };
     b.addEventListener('click', ev=>{ if(ev.target===b) root.innerHTML=''; }); }
 
