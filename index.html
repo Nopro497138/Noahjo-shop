@@ -155,8 +155,9 @@
     { id: 'prod-4', title: 'Cosmo Lamp', category: 'Gear', price: 34.99, short_desc: 'Ambient lamp projecting soft galaxy patterns.', long_desc: 'USB-C powered lamp with multiple brightness modes.', images: ['/images/lamp-1.jpg'] }
   ];
 
-  // use backend API when available; registration requires API
-  const USE_API = true;
+  // API base: server hosting your backend. Defaults to same origin but overrideable with window.API_BASE
+  const API_BASE = (window.API_BASE || location.origin).replace(/\/$/, '');
+  const USE_API = true; // set to false if you want local-only demo
 
   const TOKEN_KEY = 'nj_token';
   let state = { token: localStorage.getItem(TOKEN_KEY) || null, user: null, products: [], cart: [] };
@@ -175,7 +176,7 @@
   function showInlineMsg(text, timeout=6000){ const elMsg = el('#checkout-msg'); if(!elMsg) return; elMsg.style.display = 'block'; elMsg.textContent = text; if(timeout) setTimeout(()=>{ elMsg.style.display = 'none'; }, timeout); }
 
   // ---------- PRODUCTS: try API, otherwise fallback to seed (no debug text shown) ----------
-  async function loadProducts(){ const root = el('#products-root'); root.innerHTML = '<div class="tiny">Loading…</div>'; if(USE_API){ try{ const res = await fetch('/api/products'); if(res.ok){ const data = await res.json(); state.products = data.length ? data : SEED_PRODUCTS; renderCategories(); renderProductCards(); return; } }catch(e){ /* fall back silently */ } }
+  async function loadProducts(){ const root = el('#products-root'); root.innerHTML = '<div class="tiny">Loading…</div>'; if(USE_API){ try{ const res = await fetch(API_BASE + '/api/products'); if(res.ok){ const data = await res.json(); state.products = data.length ? data : SEED_PRODUCTS; renderCategories(); renderProductCards(); return; } }catch(e){ console.warn('Products API unreachable:', e.message); } }
     state.products = SEED_PRODUCTS.slice(); renderCategories(); renderProductCards(); }
 
   function renderCategories(){ const root = el('#categories'); root.innerHTML = ''; const cats = Array.from(new Set(state.products.map(p=>p.category||'Other'))).filter(Boolean).sort(); const all = document.createElement('button'); all.className='pill active'; all.textContent='All'; all.onclick = ()=>{ document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active')); all.classList.add('active'); renderProductCards(); }; root.appendChild(all); for(const c of cats){ const b=document.createElement('button'); b.className='pill'; b.textContent=c; b.onclick = ()=>{ document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderProductCards(); }; root.appendChild(b); } }
@@ -216,7 +217,7 @@
 
     async function loadReviews(productId){ const list=modal.querySelector('#reviews-list'); list.innerHTML='<div class="tiny">Loading…</div>';
       // try remote first
-      if(USE_API){ try{ const res=await fetch('/api/products/' + encodeURIComponent(productId) + '/reviews'); if(res.ok){ const rows=await res.json(); renderReviewRows(rows); return; } }catch(e){ /* silent fallback */ } }
+      if(USE_API){ try{ const res=await fetch(API_BASE + '/api/products/' + encodeURIComponent(productId) + '/reviews'); if(res.ok){ const rows=await res.json(); renderReviewRows(rows); return; } }catch(e){ console.warn('Reviews API unreachable:', e.message); } }
       // fallback to localStorage
       const local = JSON.parse(localStorage.getItem('nj_reviews_' + productId) || '[]'); renderReviewRows(local);
       function renderReviewRows(rows){ list.innerHTML=''; if(!rows || rows.length===0) list.innerHTML = '<div class="tiny">No reviews yet</div>'; else{ rows.forEach(r=>{ const block=document.createElement('div'); block.className='review'; block.innerHTML = `<div style="display:flex;justify-content:space-between;font-weight:700;color:var(--muted)"><div>${escapeHtml(r.author_email||r.author||'User')}</div><div>${r.rating}★</div></div><div style="margin-top:8px">${escapeHtml(r.text||'')}</div>`; // delete if author
@@ -224,7 +225,7 @@
               list.appendChild(block); }); } }
 
       // show post form if logged in
-      const form = modal.querySelector('#review-form'); if(state.token){ form.innerHTML = `<label class="tiny">Rating (1-5)</label><input id="modal-rev-rating" type="number" min="1" max="5" value="5" style="width:100%;margin-top:6px" /><label class="tiny" style="margin-top:8px">Review</label><textarea id="modal-rev-text" rows="3" style="width:100%;margin-top:6px"></textarea><div style="margin-top:8px"><button id="modal-post-rev">Post review</button></div><pre id="modal-rev-res" class="tiny" style="margin-top:6px"></pre>`; modal.querySelector('#modal-post-rev').onclick = async ()=>{ const rating = Number(modal.querySelector('#modal-rev-rating').value||5); const text = modal.querySelector('#modal-rev-text').value||''; try{ const r = await fetch('/api/products/' + encodeURIComponent(productId) + '/reviews', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ rating, text }) }); const j = await r.json(); if(!r.ok) throw new Error(j.error||'Failed'); modal.querySelector('#modal-rev-res').textContent = 'Posted'; await loadReviews(productId); }catch(err){ modal.querySelector('#modal-rev-res').textContent = 'Error: ' + (err.message||err); } }; } else { form.innerHTML = '<div class="tiny">Login to post reviews.</div>'; }
+      const form = modal.querySelector('#review-form'); if(state.token){ form.innerHTML = `<label class="tiny">Rating (1-5)</label><input id="modal-rev-rating" type="number" min="1" max="5" value="5" style="width:100%;margin-top:6px" /><label class="tiny" style="margin-top:8px">Review</label><textarea id="modal-rev-text" rows="3" style="width:100%;margin-top:6px"></textarea><div style="margin-top:8px"><button id="modal-post-rev">Post review</button></div><pre id="modal-rev-res" class="tiny" style="margin-top:6px"></pre>`; modal.querySelector('#modal-post-rev').onclick = async ()=>{ const rating = Number(modal.querySelector('#modal-rev-rating').value||5); const text = modal.querySelector('#modal-rev-text').value||''; try{ const r = await fetch(API_BASE + '/api/products/' + encodeURIComponent(productId) + '/reviews', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ rating, text }) }); const j = await r.json(); if(!r.ok) throw new Error(j.error||'Failed'); modal.querySelector('#modal-rev-res').textContent = 'Posted'; await loadReviews(productId); }catch(err){ modal.querySelector('#modal-rev-res').textContent = 'Error: ' + (err.message||err); } }; } else { form.innerHTML = '<div class="tiny">Login to post reviews.</div>'; }
     }
 
     // add to cart & buy
@@ -249,43 +250,73 @@
     if(state.cart.length===0){ showInlineMsg('Your cart is empty — add items before checkout.'); return; }
     if(!state.token){ // request login inline: open modal but do not use confirm alert
       showInlineMsg('Please log in to proceed to checkout.'); openModal('login'); return; }
-    const items = state.cart.map(i=>({ id:i.id, title:i.title, price:i.price, qty:i.qty })); el('#checkout-msg').textContent = 'Creating checkout session...'; el('#checkout-msg').style.display = 'block'; if(USE_API){ try{ const res = await fetch('/api/create-checkout-session', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ items }) }); const j = await res.json(); if(!res.ok) throw new Error(j.error||'Failed'); if(j.url){ window.location.href = j.url; } else { showInlineMsg('No checkout URL returned from server.'); } }catch(err){ showInlineMsg('Checkout error: ' + (err.message||err)); } } else { // demo flow
+    const items = state.cart.map(i=>({ id:i.id, title:i.title, price:i.price, qty:i.qty })); el('#checkout-msg').textContent = 'Creating checkout session...'; el('#checkout-msg').style.display = 'block'; if(USE_API){ try{ const res = await fetch(API_BASE + '/api/create-checkout-session', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ items }) }); const j = await res.json(); if(!res.ok) throw new Error(j.error||'Failed'); if(j.url){ window.location.href = j.url; } else { showInlineMsg('No checkout URL returned from server.'); } }catch(err){ showInlineMsg('Checkout error: ' + (err.message||err)); } } else { // demo flow
       showInlineMsg('Checkout requires backend. Enable server to complete payment.'); }
   }
 
   // ---------- AUTH: registration requires backend (no dev fallback) ----------
   async function apiRegister(email, password, code){ if(!USE_API) return { ok:false, error:'Registration requires backend API. Enable server for real registration.' };
-    try{ const res = await fetch('/api/auth/register', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password, verification_code: code }) }); const j = await res.json(); if(!res.ok) return { ok:false, error: j && j.error ? j.error : 'Register failed' }; return { ok:true, token: j.token }; }catch(e){ return { ok:false, error: 'Network error' }; } }
+    try{ const res = await fetch(API_BASE + '/api/auth/register', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password, verification_code: code }) }); const j = await res.json(); if(!res.ok) return { ok:false, error: j && j.error ? j.error : 'Register failed' }; return { ok:true, token: j.token }; }catch(e){ return { ok:false, error: 'Network error: unable to reach ' + API_BASE }; } }
 
   async function apiLogin(email, password){ if(!USE_API){ // allow demo login only when explicitly disabled server
       return { ok:false, error:'Login requires backend when demo mode is off' }; }
-    try{ const res = await fetch('/api/auth/login', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password }) }); const j = await res.json(); if(!res.ok) return { ok:false, error: j && j.error ? j.error : 'Login failed' }; return { ok:true, token: j.token }; }catch(e){ return { ok:false, error:'Network error' }; } }
+    try{ const res = await fetch(API_BASE + '/api/auth/login', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password }) }); const j = await res.json(); if(!res.ok) return { ok:false, error: j && j.error ? j.error : 'Login failed' }; return { ok:true, token: j.token }; }catch(e){ return { ok:false, error:'Network error: unable to reach ' + API_BASE }; } }
 
   // request verification code (sends email) - expects backend endpoint
-  async function requestVerifyCode(email){ if(!USE_API) return { ok:false, error:'Server required to send verification email' }; try{ const res = await fetch('/api/auth/request-verify', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email }) }); const j = await res.json(); if(!res.ok) return { ok:false, error: j && j.error ? j.error : 'Request failed' }; return { ok:true, info: j }; }catch(e){ return { ok:false, error:'Network error' }; } }
+  async function requestVerifyCode(email){ if(!USE_API) return { ok:false, error:'Server required to send verification email' }; try{ const res = await fetch(API_BASE + '/api/auth/request-verify', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email }) }); const j = await res.json(); if(!res.ok) return { ok:false, error: j && j.error ? j.error : 'Request failed' }; return { ok:true, info: j }; }catch(e){ return { ok:false, error:'Network error: unable to reach ' + API_BASE }; } }
 
   // ---------- MODALS: login/register (register: send code then confirm) ----------
-  function openModal(mode){ const root = el('#modal-root'); root.innerHTML=''; const backdrop=document.createElement('div'); backdrop.className='modal-backdrop'; const box=document.createElement('div'); box.className='modal'; if(mode==='login'){ box.innerHTML = `<h3>Login</h3><div style="margin-top:10px"><input id="m-email" placeholder="email" /></div><div style="margin-top:8px"><input id="m-pass" placeholder="password" type="password" /></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="m-close" class="ghost">Close</button><button id="m-login">Login</button></div><pre id="m-res" class="tiny" style="margin-top:8px"></pre>`; backdrop.appendChild(box); root.appendChild(backdrop); box.querySelector('#m-close').onclick = ()=> root.innerHTML=''; box.querySelector('#m-login').onclick = async ()=>{ const email = box.querySelector('#m-email').value.trim(); const pw = box.querySelector('#m-pass').value; if(!email||!pw){ box.querySelector('#m-res').textContent = 'Email & password required'; return; } const r = await apiLogin(email,pw); if(!r.ok){ box.querySelector('#m-res').textContent = r.error; } else { setToken(r.token); root.innerHTML=''; showInlineMsg('Logged in'); } }; }
-  else { // register flow: two-step — request code, then submit registration with code
-    box.innerHTML = `<h3>Register</h3>
-      <div style="margin-top:10px"><input id="r-email" placeholder="email" /></div>
-      <div style="margin-top:8px"><input id="r-pass" placeholder="password" type="password" /></div>
-      <div id="r-code-row" style="margin-top:8px;display:none"><input id="r-code" placeholder="verification code" /></div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-        <button id="r-close" class="ghost">Close</button>
-        <button id="r-send-code">Send code</button>
-        <button id="r-register">Register</button>
-      </div>
-      <pre id="r-res" class="tiny" style="margin-top:8px"></pre>`;
-    backdrop.appendChild(box); root.appendChild(backdrop);
-    box.querySelector('#r-close').onclick = ()=> root.innerHTML='';
-    box.querySelector('#r-send-code').onclick = async ()=>{ const email = box.querySelector('#r-email').value.trim(); if(!email){ box.querySelector('#r-res').textContent = 'Enter email first'; return; } box.querySelector('#r-res').textContent = 'Sending verification code...'; const r = await requestVerifyCode(email); if(!r.ok){ box.querySelector('#r-res').textContent = r.error; } else { box.querySelector('#r-res').textContent = 'Verification code sent — check your email.'; box.querySelector('#r-code-row').style.display = 'block'; } };
-    box.querySelector('#r-register').onclick = async ()=>{ const email = box.querySelector('#r-email').value.trim(); const pw = box.querySelector('#r-pass').value; const code = box.querySelector('#r-code').value.trim(); if(!email||!pw||!code){ box.querySelector('#r-res').textContent = 'Email, password and code required'; return; } box.querySelector('#r-res').textContent = 'Registering...'; const res = await apiRegister(email,pw,code); if(!res.ok){ box.querySelector('#r-res').textContent = res.error; } else { setToken(res.token); root.innerHTML=''; showInlineMsg('Registered and logged in'); } };
+  function openModal(mode){ const root = el('#modal-root'); root.innerHTML=''; const backdrop=document.createElement('div'); backdrop.className='modal-backdrop'; const box=document.createElement('div'); box.className='modal';
+    // helper to render the second box (enter code)
+    function renderCodeEntry(email, password){ box.innerHTML = `<h3>Enter verification code</h3>
+      <div style="margin-top:8px">We've sent a verification code to <strong>${escapeHtml(email)}</strong>. Check your inbox (and spam)</div>
+      <div style="margin-top:8px"><input id="confirm-code" placeholder="Enter verification code" /></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="code-cancel" class="ghost">Cancel</button><button id="code-confirm">Confirm & Register</button></div>
+      <pre id="code-res" class="tiny" style="margin-top:8px"></pre>`;
+      box.querySelector('#code-cancel').onclick = ()=>{ root.innerHTML=''; };
+      box.querySelector('#code-confirm').onclick = async ()=>{
+        const code = box.querySelector('#confirm-code').value.trim(); if(!code){ box.querySelector('#code-res').textContent = 'Enter the code you received'; return; }
+        box.querySelector('#code-res').textContent = 'Registering...';
+        const res = await apiRegister(email, password, code);
+        if(!res.ok){ box.querySelector('#code-res').textContent = res.error; } else { setToken(res.token); root.innerHTML=''; showInlineMsg('Registered and logged in'); }
+      };
+    }
+
+    if(mode==='login'){
+      box.innerHTML = `<h3>Login</h3><div style="margin-top:10px"><input id="m-email" placeholder="email" /></div><div style="margin-top:8px"><input id="m-pass" placeholder="password" type="password" /></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="m-close" class="ghost">Close</button><button id="m-login">Login</button></div><pre id="m-res" class="tiny" style="margin-top:8px"></pre>`;
+      backdrop.appendChild(box); root.appendChild(backdrop);
+      box.querySelector('#m-close').onclick = ()=> root.innerHTML='';
+      box.querySelector('#m-login').onclick = async ()=>{ const email = box.querySelector('#m-email').value.trim(); const pw = box.querySelector('#m-pass').value; if(!email||!pw){ box.querySelector('#m-res').textContent = 'Email & password required'; return; } box.querySelector('#m-res').textContent = 'Logging in...'; const r = await apiLogin(email,pw); if(!r.ok){ box.querySelector('#m-res').textContent = r.error; } else { setToken(r.token); root.innerHTML=''; showInlineMsg('Logged in'); } };
+    } else {
+      // initial register UI: ask email & password and allow sending code
+      box.innerHTML = `<h3>Register</h3>
+        <div style="margin-top:10px"><input id="r-email" placeholder="email" /></div>
+        <div style="margin-top:8px"><input id="r-pass" placeholder="password" type="password" /></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+          <button id="r-close" class="ghost">Close</button>
+          <button id="r-send-code">Send code</button>
+        </div>
+        <pre id="r-res" class="tiny" style="margin-top:8px"></pre>`;
+      backdrop.appendChild(box); root.appendChild(backdrop);
+      box.querySelector('#r-close').onclick = ()=> root.innerHTML='';
+      box.querySelector('#r-send-code').onclick = async ()=>{
+        const email = box.querySelector('#r-email').value.trim(); const pw = box.querySelector('#r-pass').value;
+        if(!email || !pw){ box.querySelector('#r-res').textContent = 'Email and password are required'; return; }
+        box.querySelector('#r-res').textContent = 'Sending verification code...';
+        const r = await requestVerifyCode(email);
+        if(!r.ok){ box.querySelector('#r-res').textContent = r.error + '
+If your backend is on a different host, set window.API_BASE before loading this page.'; } else {
+          // show the separate code-entry box as requested
+          renderCodeEntry(email, pw);
+        }
+      };
+    }
+
+    backdrop.addEventListener('click', ev=>{ if(ev.target===backdrop) root.innerHTML=''; });
   }
-  backdrop.addEventListener('click', ev=>{ if(ev.target===backdrop) root.innerHTML=''; }); }
 
   // ---------- POST-CHECKOUT handling ----------
-  async function handleCheckoutReturn(){ try{ const url = new URL(location.href); const s = url.searchParams.get('checkout_success'); const session_id = url.searchParams.get('session_id'); if(s && session_id){ if(USE_API){ try{ const res = await fetch('/api/orders/by-session/' + encodeURIComponent(session_id)); if(res.ok){ const order = await res.json(); state.cart = []; saveCart(); openChatModal(order.id, order.user_email || (state.user && state.user.email)); url.searchParams.delete('checkout_success'); url.searchParams.delete('session_id'); history.replaceState({}, document.title, url.toString()); return; } }catch(e){ } }
+  async function handleCheckoutReturn(){ try{ const url = new URL(location.href); const s = url.searchParams.get('checkout_success'); const session_id = url.searchParams.get('session_id'); if(s && session_id){ if(USE_API){ try{ const res = await fetch(API_BASE + '/api/orders/by-session/' + encodeURIComponent(session_id)); if(res.ok){ const order = await res.json(); state.cart = []; saveCart(); openChatModal(order.id, order.user_email || (state.user && state.user.email)); url.searchParams.delete('checkout_success'); url.searchParams.delete('session_id'); history.replaceState({}, document.title, url.toString()); return; } }catch(e){ console.warn('Orders API unreachable:', e.message); } }
       // local demo check
       const orders = JSON.parse(localStorage.getItem('nj_demo_orders')||'[]'); const ord = orders.find(o=>o.stripe_session_id===session_id); if(ord){ state.cart=[]; saveCart(); openChatModal(ord.id, ord.user_email); url.searchParams.delete('checkout_success'); url.searchParams.delete('session_id'); history.replaceState({}, document.title, url.toString()); }
     } }catch(e){ console.error(e); } }
@@ -293,7 +324,7 @@
   // ---------- CHAT modal (Socket.IO or fallback) ----------
   let socket = null;
   function openChatModal(orderId, partnerEmail){ const root = el('#modal-root'); root.innerHTML=''; const b=document.createElement('div'); b.className='modal-backdrop'; const box=document.createElement('div'); box.className='modal'; box.innerHTML = `<h3>Order #${orderId} — Chat</h3><div style="margin-top:12px" id="chat-messages" class="chat-box"></div><div style="display:flex;gap:8px;margin-top:8px"><input id="chat-input" placeholder="Message..." style="flex:1" /><button id="chat-send">Send</button></div>`; b.appendChild(box); root.appendChild(b);
-    try{ if(typeof io !== 'undefined' && state.token){ if(!socket) socket = io({ auth: { token: state.token } }); socket.emit('joinOrder', orderId, (resp)=>{ if(resp && resp.error){ box.querySelector('#chat-messages').innerHTML = '<div class="tiny">'+escapeHtml(resp.error)+'</div>'; return; } const msgs = resp.messages || []; const list = box.querySelector('#chat-messages'); list.innerHTML=''; msgs.forEach(m=>{ const elm=document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(m.sender_role||'user')} • ${new Date(m.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(m.text)}</div>`; list.appendChild(elm); }); socket.off('message'); socket.on('message', msg=>{ const list=box.querySelector('#chat-messages'); const elm=document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(msg.sender_role||'user')} • ${new Date(msg.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(msg.text)}</div>`; list.appendChild(elm); list.scrollTop = list.scrollHeight; }); box.querySelector('#chat-send').onclick = ()=>{ const text = box.querySelector('#chat-input').value.trim(); if(!text) return; socket.emit('message', { orderId, text }, (res)=>{ if(res && res.ok){ box.querySelector('#chat-input').value = ''; } else { showInlineMsg('Send failed'); } }); }; }); return; } }catch(e){ }
+    try{ if(typeof io !== 'undefined' && state.token){ if(!socket) socket = io({ auth: { token: state.token } }); socket.emit('joinOrder', orderId, (resp)=>{ if(resp && resp.error){ box.querySelector('#chat-messages').innerHTML = '<div class="tiny>'+escapeHtml(resp.error)+'</div>'; return; } const msgs = resp.messages || []; const list = box.querySelector('#chat-messages'); list.innerHTML=''; msgs.forEach(m=>{ const elm=document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(m.sender_role||'user')} • ${new Date(m.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(m.text)}</div>`; list.appendChild(elm); }); socket.off('message'); socket.on('message', msg=>{ const list=box.querySelector('#chat-messages'); const elm=document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(msg.sender_role||'user')} • ${new Date(msg.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(msg.text)}</div>`; list.appendChild(elm); list.scrollTop = list.scrollHeight; }); box.querySelector('#chat-send').onclick = ()=>{ const text = box.querySelector('#chat-input').value.trim(); if(!text) return; socket.emit('message', { orderId, text }, (res)=>{ if(res && res.ok){ box.querySelector('#chat-input').value = ''; } else { showInlineMsg('Send failed'); } }); }; }); return; } }catch(e){ }
     // fallback localStorage chat
     const key = 'nj_chat_order_' + orderId; const messages = JSON.parse(localStorage.getItem(key)||'[]'); const list = box.querySelector('#chat-messages'); list.innerHTML=''; messages.forEach(m=>{ const elm=document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(m.sender||'user')} • ${new Date(m.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(m.text)}</div>`; list.appendChild(elm); }); box.querySelector('#chat-send').onclick = ()=>{ const text = box.querySelector('#chat-input').value.trim(); if(!text) return; const msg = { sender: (state.user&&state.user.email)||'you', text, created_at: new Date().toISOString() }; messages.push(msg); localStorage.setItem(key, JSON.stringify(messages)); const elm=document.createElement('div'); elm.className='message'; elm.innerHTML = `<div style="font-size:12px;color:var(--muted)">${escapeHtml(msg.sender)} • ${new Date(msg.created_at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(msg.text)}</div>`; list.appendChild(elm); box.querySelector('#chat-input').value=''; list.scrollTop = list.scrollHeight; };
     b.addEventListener('click', ev=>{ if(ev.target===b) root.innerHTML=''; }); }
