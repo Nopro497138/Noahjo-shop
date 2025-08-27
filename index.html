@@ -11,8 +11,6 @@
       --accent-a: #6e47ff;
       --accent-b: #33c1ff;
       --accent-c: #ff7eb6;
-      --panel: rgba(255,255,255,0.04);
-      --glass: rgba(255,255,255,0.06);
       --muted: rgba(255,255,255,0.65);
       --card-radius: 18px;
       --soft-shadow: 0 12px 40px rgba(3,8,25,0.6);
@@ -35,59 +33,28 @@
     }
 
     /* drifting blobs */
-    .galaxy-effect{
-      position:fixed; inset:0; z-index:-2; pointer-events:none;
-    }
-    .blob{
-      position:absolute; border-radius:50%; filter: blur(60px); opacity:0.28;
-      animation: drift 16s ease-in-out infinite;
-      mix-blend-mode: screen;
-    }
-    .blob.a{ width:520px; height:520px; left:-120px; top:-80px; background: linear-gradient(135deg,#6e47ff,#33c1ff); animation-duration:18s;}
-    .blob.b{ width:420px; height:420px; right:-80px; top:40px; background: linear-gradient(135deg,#ff7eb6,#7afcff); animation-duration:22s;}
+    .galaxy-effect{ position:fixed; inset:0; z-index:-2; pointer-events:none; }
+    .blob{ position:absolute; border-radius:50%; filter: blur(60px); opacity:0.28; animation: drift 16s ease-in-out infinite; mix-blend-mode: screen; }
+    .blob.a{ width:520px; height:520px; left:-120px; top:-80px; background: linear-gradient(135deg,#6e47ff,#33c1ff); animation-duration:18s; }
+    .blob.b{ width:420px; height:420px; right:-80px; top:40px; background: linear-gradient(135deg,#ff7eb6,#7afcff); animation-duration:22s; }
     @keyframes drift{0%{transform:translate(0,0)}50%{transform:translate(12px,-18px)}100%{transform:translate(0,0)}}
 
     /* subtle starfield */
-    .stars{ position:fixed; inset:0; z-index:-3; background-image:
-      radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-      radial-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
-      background-size: 6px 6px, 14px 14px; opacity: 0.22; mix-blend-mode: screen;
-    }
+    .stars{ position:fixed; inset:0; z-index:-3; background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), radial-gradient(rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 6px 6px, 14px 14px; opacity: 0.22; mix-blend-mode: screen; }
 
     /* ----- topbar ----- */
-    .topbar{
-      position:sticky; top:0; display:flex; align-items:center; gap:16px;
-      padding:14px 20px; backdrop-filter: blur(6px);
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-      z-index:40;
-    }
+    .topbar{ position:sticky; top:0; display:flex; align-items:center; gap:16px; padding:14px 20px; backdrop-filter: blur(6px); background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent); border-bottom: 1px solid rgba(255,255,255,0.03); z-index:40; }
     .brand{ display:flex; gap:12px; align-items:center; cursor:pointer; }
-    .logo{
-      width:52px; height:52px; border-radius:12px; display:grid; place-items:center;
-      background: linear-gradient(135deg,var(--accent-a),var(--accent-b));
-      box-shadow: 0 8px 30px rgba(51,193,255,0.12), inset 0 -6px 18px rgba(0,0,0,0.12);
-      font-weight:700; color:white; font-size:20px;
-    }
+    .logo{ width:52px; height:52px; border-radius:12px; display:grid; place-items:center; background: linear-gradient(135deg,var(--accent-a),var(--accent-b)); box-shadow: 0 8px 30px rgba(51,193,255,0.12), inset 0 -6px 18px rgba(0,0,0,0.12); font-weight:700; color:white; font-size:20px; }
     .brand h1{ margin:0; font-size:18px; letter-spacing:0.2px; }
     .brand p{ margin:0; font-size:12px; color:var(--muted); }
-
     .top-actions{ margin-left:auto; display:flex; align-items:center; gap:10px; }
 
     /* animated button - wonky */
-    .btn{
-      border:0; padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:700;
-      background: linear-gradient(90deg,var(--accent-a),var(--accent-b));
-      color:white; box-shadow: var(--soft-shadow); transform-origin:center;
-      transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s;
-    }
-    .btn.ghost{
-      background: transparent; color:var(--muted); border: 1px solid rgba(255,255,255,0.06); box-shadow:none;
-    }
+    .btn{ border:0; padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:700; background: linear-gradient(90deg,var(--accent-a),var(--accent-b)); color:white; box-shadow: var(--soft-shadow); transform-origin:center; transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s; }
+    .btn.ghost{ background: transparent; color:var(--muted); border: 1px solid rgba(255,255,255,0.06); box-shadow:none; }
     .btn:hover{ transform: translateY(-4px) rotate(-0.6deg); box-shadow: 0 18px 40px rgba(15,30,80,.45); }
     .btn:active{ transform: translateY(-1px) rotate(0.6deg) scale(.995) }
-
-    /* extra playful animation */
     .btn.wonky:hover{ animation: wonky .8s ease-in-out; }
     @keyframes wonky{ 20%{ transform: translateY(-4px) rotate(3deg) } 40%{ transform: translateY(-6px) rotate(-3deg)} 60%{ transform: translateY(-4px) rotate(1deg) } 100%{ transform: translateY(-4px) rotate(0deg)} }
 
@@ -97,23 +64,17 @@
     @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } .top-actions{ display:none; } }
 
     /* card */
-    .card{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius: var(--card-radius);
-      padding:16px; border: var(--glass-border); box-shadow: 0 8px 30px rgba(5,10,20,0.35); }
+    .card{ background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius: var(--card-radius); padding:16px; border: var(--glass-border); box-shadow: 0 8px 30px rgba(5,10,20,0.35); }
 
     /* product grid */
     .products-grid{ display:grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap:16px; margin-top:12px; }
-    .product-card{
-      border-radius:14px; overflow:hidden; position:relative; cursor:pointer;
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border: 1px solid rgba(255,255,255,0.04); transition: transform .2s ease, box-shadow .2s;
-    }
+    .product-card{ border-radius:14px; overflow:hidden; position:relative; cursor:pointer; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.04); transition: transform .2s ease, box-shadow .2s; }
     .product-card:hover{ transform: translateY(-8px); box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
     .product-media{ width:100%; height:160px; object-fit:cover; display:block; background:#061224; }
     .product-body{ padding:12px; display:flex; gap:12px; align-items:center; justify-content:space-between; }
     .meta{ flex:1; }
     .meta h3{ margin:0; font-size:16px; }
     .meta p{ margin:6px 0 0 0; font-size:13px; color:var(--muted); }
-
     .price{ font-weight:800; font-size:16px; color:white; text-shadow: 0 4px 12px rgba(0,0,0,0.6); }
 
     /* cart */
@@ -127,7 +88,6 @@
     .modal{ width:100%; max-width:960px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015)); border-radius:18px; padding:18px; border:1px solid rgba(255,255,255,0.04); box-shadow: 0 40px 120px rgba(3,8,25,0.6); max-height:84vh; overflow:auto; -webkit-overflow-scrolling:touch; }
     .modal-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; align-items:start; }
     @media (max-width:880px){ .modal-grid{ grid-template-columns: 1fr; } }
-
     .carousel{ position:relative; border-radius:12px; overflow:hidden; background:#020617; min-height:260px; display:flex; align-items:center; justify-content:center; }
     .carousel img{ width:100%; height:100%; object-fit:cover; display:block; }
     .carousel .arrow{ position:absolute; top:50%; transform:translateY(-50%); background: rgba(0,0,0,0.35); border:none; color:white; padding:10px; border-radius:50%; cursor:pointer; }
@@ -138,7 +98,6 @@
     .tabbar button{ padding:6px 10px; border-radius:8px; background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.02); }
     .tabbar button.active{ background:linear-gradient(90deg,var(--accent-a),var(--accent-b)); color:white; box-shadow: 0 10px 30px rgba(110,71,255,0.12); }
     .reviews-list{ margin-top:12px; display:flex; flex-direction:column; gap:10px; }
-
     .review{ background: rgba(255,255,255,0.02); padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.02); }
     .review .meta{ display:flex; justify-content:space-between; font-weight:700; font-size:13px; color:var(--muted); }
 
@@ -210,15 +169,14 @@
         </div>
 
         <div class="card" style="margin-top:12px">
-          <strong>User</strong>
-          <div class="tiny muted" style="margin-top:8px">Quick test actions (uses your server endpoints)</div>
-          <div style="margin-top:10px">
-            <input id="req-email" placeholder="you@example.com" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit" />
-            <div style="display:flex;gap:8px;margin-top:8px">
-              <button id="btn-check" class="btn ghost" style="flex:1">Check email</button>
-              <button id="btn-req" class="btn" style="flex:1">Request code</button>
+          <strong>Account</strong>
+          <div class="tiny muted" style="margin-top:8px">Register or login to leave reviews and checkout.</div>
+          <div style="margin-top:12px">
+            <div id="account-opts" style="display:flex;gap:8px">
+              <button id="acct-login" class="btn ghost">Login</button>
+              <button id="acct-register" class="btn">Register</button>
             </div>
-            <pre id="req-result" class="tiny muted" style="margin-top:8px;white-space:pre-wrap;"></pre>
+            <div id="acct-info" style="margin-top:12px"></div>
           </div>
         </div>
       </aside>
@@ -233,35 +191,37 @@
   <div id="modal-root" aria-live="polite"></div>
 
 <script>
-/* Kept your API_BASE logic — change if backend is remote */
-const API_BASE = location.origin; // <-- set to your backend URL if needed
-const TOKEN_KEY = 'nj_token';
+/* Single-file frontend adjusted per your requests:
+   - Removed the bottom-left test email UI
+   - Register/login fixed (no verification code required)
+   - Products loaded from /api/products into a responsive grid
+   - Carousel arrows appear when multiple images
+   - Reviews tab with post/delete (server enforces 1 review per user; admin can delete)
+   - Cart -> Stripe Checkout (server must provide /api/create-checkout-session)
+   - Images are added on the server side (you place them in public/images and products reference them)
+   - Modal + product detail improved for iPad scrolling
+*/
 
+const API_BASE = location.origin; // change this to your backend URL if it's remote
+const TOKEN_KEY = 'nj_token';
 let state = { token: localStorage.getItem(TOKEN_KEY) || null, user: null, products: [], cart: [] };
 
-/* UTILITIES */
-function parseJwt(token){
-  try { const p = token.split('.')[1]; return JSON.parse(atob(p.replace(/-/g,'+').replace(/_/g,'/'))); } catch(e){ return null; }
-}
-function setToken(token){
-  state.token = token;
-  if(token) localStorage.setItem(TOKEN_KEY, token); else localStorage.removeItem(TOKEN_KEY);
-  state.user = token ? parseJwt(token) : null;
-  refreshHeader();
-}
+/* Utilities */
+function parseJwt(token){ try { const p = token.split('.')[1]; return JSON.parse(atob(p.replace(/-/g,'+').replace(/_/g,'/'))); } catch(e){ return null; } }
+function setToken(token){ state.token = token; if(token) localStorage.setItem(TOKEN_KEY, token); else localStorage.removeItem(TOKEN_KEY); state.user = token ? parseJwt(token) : null; refreshHeader(); }
 function authHeader(){ return state.token ? { 'Authorization': 'Bearer ' + state.token } : {}; }
 function jsonHeaders(){ return { 'Content-Type': 'application/json' }; }
 function formatPrice(p){ return '$' + Number(p).toFixed(2); }
 function el(q){ return document.querySelector(q); }
-function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"]+/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 
-/* INIT */
+/* Init token/user from localStorage */
 setToken(state.token);
 
 /* UI wiring */
 el('#btn-refresh').addEventListener('click', ()=> loadProducts(true));
-el('#btn-check').addEventListener('click', checkEmail);
-el('#btn-req').addEventListener('click', requestCode);
+el('#acct-login').addEventListener('click', ()=> openModal('login'));
+el('#acct-register').addEventListener('click', ()=> openModal('register'));
 el('#btn-login').addEventListener('click', ()=> openModal('login'));
 el('#btn-register').addEventListener('click', ()=> openModal('register'));
 el('#btn-cart').addEventListener('click', ()=> { window.scrollTo({ top: 0, behavior:'smooth' }); });
@@ -269,19 +229,17 @@ el('#btn-clear').addEventListener('click', ()=> { state.cart=[]; saveCart(); ren
 el('#btn-checkout').addEventListener('click', checkout);
 el('#search').addEventListener('input', ()=> renderProductCards());
 
-/* PRODUCTS */
+/* Products */
 async function loadProducts(force=false){
+  const root = el('#products-root');
+  root.innerHTML = '<div class="tiny muted">Loading products…</div>';
   try {
     const res = await fetch(API_BASE + '/api/products');
-    if(!res.ok) throw new Error('Failed to load products');
+    if(!res.ok) throw new Error('Failed to load products: ' + res.status);
     const data = await res.json();
     state.products = data;
     renderProductCards();
-  } catch(err){
-    console.error(err);
-    const root = el('#products-root');
-    root.innerHTML = '<div class="tiny muted">Failed to load products.</div>';
-  }
+  } catch(err){ console.error(err); root.innerHTML = '<div class="tiny muted">Failed to load products.</div>'; }
 }
 
 function renderProductCards(){
@@ -289,9 +247,7 @@ function renderProductCards(){
   root.innerHTML = '';
   const q = el('#search').value.trim().toLowerCase();
   const filtered = state.products.filter(p => (!q || p.title.toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q)));
-  if(filtered.length===0){
-    root.innerHTML = '<div class="tiny muted">No products found.</div>'; return;
-  }
+  if(filtered.length===0){ root.innerHTML = '<div class="tiny muted">No products found.</div>'; return; }
   for(const p of filtered){
     const card = document.createElement('div'); card.className = 'product-card';
     const img = (p.images && p.images[0]) ? p.images[0] : 'https://via.placeholder.com/640x360?text=No+Image';
@@ -315,7 +271,7 @@ function renderProductCards(){
   }
 }
 
-/* PRODUCT DETAIL + CAROUSEL + REVIEWS */
+/* Product Detail + Carousel + Reviews */
 function openProduct(id){
   const p = state.products.find(x=>x.id===id);
   if(!p) return;
@@ -323,7 +279,6 @@ function openProduct(id){
   area.innerHTML = '';
   const modal = document.createElement('div'); modal.className='modal-backdrop';
   const inner = document.createElement('div'); inner.className='modal';
-  // build carousel html with arrows if multiple images
   const imgs = (p.images && p.images.length) ? p.images : ['https://via.placeholder.com/800x480?text=No+Image'];
   inner.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center">
@@ -364,14 +319,13 @@ function openProduct(id){
 
           <div id="reviews-pane" style="display:none">
             <div id="reviews-list" class="reviews-list"></div>
-            <div id="review-form" style="margin-top:12px;"></div>
+            <div id="review-form" style="margin-top:12px"></div>
           </div>
         </div>
       </div>
     </div>
   `;
-  modal.appendChild(inner);
-  area.appendChild(modal);
+  modal.appendChild(inner); area.appendChild(modal);
 
   // carousel logic
   let idx = 0;
@@ -379,22 +333,8 @@ function openProduct(id){
   const leftBtn = inner.querySelector('#carousel-left');
   const rightBtn = inner.querySelector('#carousel-right');
   const dots = inner.querySelector('#carousel-dots');
-
-  function renderDots(){
-    dots.innerHTML = '';
-    imgs.forEach((_,i)=>{
-      const d = document.createElement('button');
-      d.style.width='8px'; d.style.height='8px'; d.style.borderRadius='50%';
-      d.style.border='none'; d.style.margin='0 4px'; d.style.background = i===idx ? 'white' : 'rgba(255,255,255,0.18)';
-      d.onclick = ()=> { idx = i; update(); };
-      dots.appendChild(d);
-    });
-  }
-  function update(){
-    imgEl.src = imgs[idx];
-    if(imgs.length>1){ leftBtn.style.display='block'; rightBtn.style.display='block'; } else { leftBtn.style.display='none'; rightBtn.style.display='none'; }
-    renderDots();
-  }
+  function renderDots(){ dots.innerHTML = ''; imgs.forEach((_,i)=>{ const d = document.createElement('button'); d.style.width='8px'; d.style.height='8px'; d.style.borderRadius='50%'; d.style.border='none'; d.style.margin='0 4px'; d.style.background = i===idx ? 'white' : 'rgba(255,255,255,0.18)'; d.onclick = ()=> { idx = i; update(); }; dots.appendChild(d); }); }
+  function update(){ imgEl.src = imgs[idx]; if(imgs.length>1){ leftBtn.style.display='block'; rightBtn.style.display='block'; } else { leftBtn.style.display='none'; rightBtn.style.display='none'; } renderDots(); }
   leftBtn.onclick = (e)=>{ e.stopPropagation(); idx=(idx-1+imgs.length)%imgs.length; update(); }
   rightBtn.onclick = (e)=>{ e.stopPropagation(); idx=(idx+1)%imgs.length; update(); }
   renderDots();
@@ -416,15 +356,7 @@ function openProduct(id){
       if(!res.ok) throw new Error('Failed');
       const rows = await res.json();
       if(rows.length===0) list.innerHTML = '<div class="tiny muted">No reviews yet</div>';
-      else {
-        list.innerHTML = '';
-        rows.forEach(r=>{
-          const block = document.createElement('div'); block.className='review';
-          block.innerHTML = `<div class="meta"><div>${escapeHtml(r.author_email_actual||r.author_email||'User')}</div><div>${r.rating}★</div></div><div style="margin-top:8px">${escapeHtml(r.text||'')}</div>`;
-          list.appendChild(block);
-        });
-      }
-      // show post form if logged in
+      else { list.innerHTML = ''; rows.forEach(r=>{ const block = document.createElement('div'); block.className='review'; block.innerHTML = `<div class="meta"><div>${escapeHtml(r.author_email_actual||r.author_email||'User')}</div><div>${r.rating}★</div></div><div style="margin-top:8px">${escapeHtml(r.text||'')}</div>`; list.appendChild(block); }); }
       const form = inner.querySelector('#review-form');
       if(state.token){
         form.innerHTML = `<label class="tiny muted">Rating (1-5)</label><input id="modal-rev-rating" type="number" min="1" max="5" value="5" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit" />
@@ -435,181 +367,59 @@ function openProduct(id){
           const rating = Number(inner.querySelector('#modal-rev-rating').value||5);
           const text = inner.querySelector('#modal-rev-text').value||'';
           try {
-            const r = await fetch(API_BASE + '/api/products/' + encodeURIComponent(productId) + '/reviews', {
-              method:'POST', headers:Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ rating, text })
-            });
+            const r = await fetch(API_BASE + '/api/products/' + encodeURIComponent(productId) + '/reviews', { method:'POST', headers:Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ rating, text }) });
             const j = await r.json();
             if(!r.ok) throw new Error(j.error||'Failed');
             inner.querySelector('#modal-rev-res').textContent = 'Posted';
             await loadReviews(productId);
           } catch(err){ inner.querySelector('#modal-rev-res').textContent = 'Error: ' + (err.message||err); }
         };
-      } else {
-        inner.querySelector('#review-form').innerHTML = '<div class="tiny muted">Login to post reviews.</div>';
-      }
-    } catch(e){
-      list.innerHTML = '<div class="tiny muted">Failed to load reviews</div>';
-    }
+      } else { inner.querySelector('#review-form').innerHTML = '<div class="tiny muted">Login to post reviews.</div>'; }
+    } catch(e){ list.innerHTML = '<div class="tiny muted">Failed to load reviews</div>'; }
   }
 
   // add to cart + buy now
   inner.querySelector('#add-to-cart-detail').onclick = ()=> { addToCart(p.id,1); };
-  inner.querySelector('#buy-now').onclick = async ()=>{
-    addToCart(p.id,1);
-    await checkout(); // will redirect to Stripe
-  };
+  inner.querySelector('#buy-now').onclick = async ()=>{ addToCart(p.id,1); await checkout(); };
 
   // close
   inner.querySelector('#close-detail').onclick = ()=> { area.innerHTML = ''; };
-
-  // accessibility: close on backdrop click
   modal.addEventListener('click', (ev)=>{ if(ev.target===modal) area.innerHTML=''; });
-
-  // ensure modal initially shows details
-  detailsPane.style.display = 'block';
-  reviewsPane.style.display = 'none';
+  detailsPane.style.display = 'block'; reviewsPane.style.display = 'none';
 }
 
-/* REVIEWS helpers (delete used earlier in list) */
-async function deleteReview(id){
-  if(!confirm('Delete review?')) return;
-  try {
-    const res = await fetch(API_BASE + '/api/reviews/' + id, { method:'DELETE', headers: authHeader() });
-    const j = await res.json();
-    if(!res.ok) throw new Error(j.error||'Failed');
-    alert('Deleted');
-    await loadProducts(true);
-  } catch(e){ alert('Error: ' + (e.message||e)); }
-}
+/* Reviews helpers (delete) */
+async function deleteReview(id){ if(!confirm('Delete review?')) return; try { const res = await fetch(API_BASE + '/api/reviews/' + id, { method:'DELETE', headers: authHeader() }); const j = await res.json(); if(!res.ok) throw new Error(j.error||'Failed'); alert('Deleted'); await loadProducts(true); } catch(e){ alert('Error: ' + (e.message||e)); } }
 
-/* CART */
+/* Cart */
 function loadCart(){ try { const raw = localStorage.getItem('nj_cart'); state.cart = raw ? JSON.parse(raw) : []; } catch(e){ state.cart=[]; } renderCart(); }
 function saveCart(){ localStorage.setItem('nj_cart', JSON.stringify(state.cart)); renderCart(); }
-function addToCart(id, qty){
-  const p = state.products.find(x=>x.id===id); if(!p) return alert('Product not found');
-  const ex = state.cart.find(x=>x.id===id);
-  if(ex) ex.qty += qty; else state.cart.push({ id:p.id, title:p.title, price:Number(p.price), qty });
-  saveCart();
-}
-function changeQty(id, delta){
-  const it = state.cart.find(x=>x.id===id); if(!it) return;
-  it.qty += delta; if(it.qty<=0) state.cart = state.cart.filter(x=>x.id!==id); saveCart();
-}
-function renderCart(){
-  const el = el('#cart-list') || document.getElementById('cart-list');
-  el.innerHTML = '';
-  if(!state.cart || state.cart.length===0){ el.innerHTML = '<div class="tiny muted">Cart empty</div>'; el('#cart-total') && (el('#cart-total').textContent='—'); document.getElementById('cart-count').textContent = '0'; return; }
-  let total = 0;
-  for(const it of state.cart){
-    total += it.price * it.qty;
-    const row = document.createElement('div'); row.className='cart-item';
-    row.innerHTML = `<div class="left"><img src="${escapeHtml((state.products.find(p=>p.id===it.id)||{}).images?.[0]||'https://via.placeholder.com/160x110?text=Image')}" alt="" /><div><div style="font-weight:700">${escapeHtml(it.title)}</div><div class="tiny muted">${it.qty} × ${formatPrice(it.price)}</div></div></div>
-      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><div style="font-weight:800">${formatPrice(it.price*it.qty)}</div><div style="display:flex;gap:6px"><button class="btn ghost" onclick='changeQty("${it.id}",-1)'>-</button><button class="btn ghost" onclick='changeQty("${it.id}",1)'>+</button></div></div>`;
-    el.appendChild(row);
-  }
-  el('#cart-total') && (el('#cart-total').textContent = formatPrice(total));
-  document.getElementById('cart-count').textContent = state.cart.reduce((s,i)=>s+i.qty,0);
-}
+function addToCart(id, qty){ const p = state.products.find(x=>x.id===id); if(!p) return alert('Product not found'); const ex = state.cart.find(x=>x.id===id); if(ex) ex.qty += qty; else state.cart.push({ id:p.id, title:p.title, price:Number(p.price), qty }); saveCart(); }
+function changeQty(id, delta){ const it = state.cart.find(x=>x.id===id); if(!it) return; it.qty += delta; if(it.qty<=0) state.cart = state.cart.filter(x=>x.id!==id); saveCart(); }
+function renderCart(){ const elc = el('#cart-list') || document.getElementById('cart-list'); elc.innerHTML = ''; if(!state.cart || state.cart.length===0){ elc.innerHTML = '<div class="tiny muted">Cart empty</div>'; el('#cart-total') && (el('#cart-total').textContent='—'); document.getElementById('cart-count').textContent = '0'; return; } let total = 0; for(const it of state.cart){ total += it.price * it.qty; const row = document.createElement('div'); row.className='cart-item'; row.innerHTML = `<div class="left"><img src="${escapeHtml((state.products.find(p=>p.id===it.id)||{}).images?.[0]||'https://via.placeholder.com/160x110?text=Image')}" alt="" /><div><div style="font-weight:700">${escapeHtml(it.title)}</div><div class="tiny muted">${it.qty} × ${formatPrice(it.price)}</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><div style="font-weight:800">${formatPrice(it.price*it.qty)}</div><div style="display:flex;gap:6px"><button class="btn ghost" onclick='changeQty("${it.id}",-1)'>-</button><button class="btn ghost" onclick='changeQty("${it.id}",1)'>+</button></div></div>`; elc.appendChild(row); } el('#cart-total') && (el('#cart-total').textContent = formatPrice(total)); document.getElementById('cart-count').textContent = state.cart.reduce((s,i)=>s+i.qty,0); }
 
-/* CHECKOUT (creates stripe session on server) */
-async function checkout(){
-  if(state.cart.length===0){ alert('Cart empty'); return; }
-  if(!state.token){ if(confirm('You must be logged in to checkout. Open login?')) openModal('login'); return; }
-  const items = state.cart.map(i=>({ id:i.id, title:i.title, price:i.price, qty:i.qty }));
-  el('#checkout-msg').textContent = 'Creating checkout session…';
-  try {
-    const res = await fetch(API_BASE + '/api/create-checkout-session', {
-      method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ items })
-    });
-    const j = await res.json();
-    if(!res.ok) throw new Error(j.error||'Checkout failed');
-    if(j.url) window.location.href = j.url;
-    else el('#checkout-msg').textContent = 'No checkout URL returned.';
-  } catch(err){ el('#checkout-msg').textContent = 'Checkout error: ' + (err.message||err); }
-}
+/* Checkout */
+async function checkout(){ if(state.cart.length===0){ alert('Cart empty'); return; } if(!state.token){ if(confirm('You must be logged in to checkout. Open login?')) openModal('login'); return; } const items = state.cart.map(i=>({ id:i.id, title:i.title, price:i.price, qty:i.qty })); el('#checkout-msg').textContent = 'Creating checkout session…'; try { const res = await fetch(API_BASE + '/api/create-checkout-session', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ items }) }); const j = await res.json(); if(!res.ok) throw new Error(j.error||'Checkout failed'); if(j.url) window.location.href = j.url; else el('#checkout-msg').textContent = 'No checkout URL returned.'; } catch(err){ el('#checkout-msg').textContent = 'Checkout error: ' + (err.message||err); } }
 
-/* AUTH helpers (simple check/request code stubs kept) */
-async function checkEmail(){
-  const email = el('#req-email').value.trim();
-  if(!email) return alert('Enter email');
-  try {
-    const res = await fetch(API_BASE + '/api/auth/check-email?email=' + encodeURIComponent(email));
-    const j = await res.json();
-    el('#req-result').textContent = JSON.stringify(j, null, 2);
-  } catch(e){ el('#req-result').textContent = 'Check failed'; }
-}
-async function requestCode(){
-  const email = el('#req-email').value.trim();
-  if(!email) return alert('Enter email');
-  try {
-    const res = await fetch(API_BASE + '/api/auth/request-verify', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email })});
-    const j = await res.json();
-    el('#req-result').textContent = JSON.stringify(j, null, 2);
-  } catch(e){ el('#req-result').textContent = 'Request failed'; }
-}
-
-/* MODALS (login/register) - improved layout */
-function openModal(mode){
-  const root = el('#modal-root'); root.innerHTML = '';
-  const backdrop = document.createElement('div'); backdrop.className='modal-backdrop';
-  const box = document.createElement('div'); box.className='modal';
-  if(mode==='login'){
-    box.innerHTML = `<h3 style="margin:0">Login</h3>
+/* Auth: login & register (no verification code required) */
+function openModal(mode){ const root = el('#modal-root'); root.innerHTML = ''; const backdrop = document.createElement('div'); backdrop.className = 'modal-backdrop'; const box = document.createElement('div'); box.className = 'modal'; if(mode === 'login'){ box.innerHTML = `<h3 style="margin:0">Login</h3>
     <div style="margin-top:10px"><input id="m-email" placeholder="email" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit" /></div>
     <div style="margin-top:8px"><input id="m-pass" placeholder="password" type="password" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit" /></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="m-close" class="btn ghost">Close</button><button id="m-login" class="btn">Login</button></div>
-    <pre id="m-res" class="tiny muted" style="margin-top:8px"></pre>`;
-    backdrop.appendChild(box); root.appendChild(backdrop);
-    box.querySelector('#m-close').onclick = ()=> root.innerHTML='';
-    box.querySelector('#m-login').onclick = async ()=>{
-      const email = box.querySelector('#m-email').value.trim();
-      const pw = box.querySelector('#m-pass').value;
-      if(!email||!pw) return alert('Email & password required');
-      try {
-        const res = await fetch(API_BASE + '/api/auth/login', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password: pw })});
-        const j = await res.json();
-        box.querySelector('#m-res').textContent = JSON.stringify(j,null,2);
-        if(res.ok && j.token){ setToken(j.token); root.innerHTML=''; alert('Logged in'); }
-      } catch(e){ box.querySelector('#m-res').textContent = 'Login failed'; }
-    };
-  } else {
-    box.innerHTML = `<h3 style="margin:0">Register</h3>
+    <pre id="m-res" class="tiny muted" style="margin-top:8px"></pre>`; backdrop.appendChild(box); root.appendChild(backdrop); box.querySelector('#m-close').onclick = ()=> root.innerHTML = ''; box.querySelector('#m-login').onclick = async ()=>{ const email = box.querySelector('#m-email').value.trim(); const pw = box.querySelector('#m-pass').value; if(!email||!pw) return alert('Email & password required'); try { const res = await fetch(API_BASE + '/api/auth/login', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password: pw })}); const j = await res.json(); box.querySelector('#m-res').textContent = JSON.stringify(j,null,2); if(res.ok && j.token){ setToken(j.token); root.innerHTML=''; alert('Logged in'); const info = el('#acct-info'); if(info) info.innerHTML = `<div style="font-size:13px">Signed in as <strong>${escapeHtml(parseJwt(j.token)?.email||'User')}</strong></div>`; } } catch(e){ box.querySelector('#m-res').textContent = 'Login failed'; } };
+  } else { box.innerHTML = `<h3 style="margin:0">Register</h3>
     <div style="margin-top:10px"><input id="r-email" placeholder="email" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit" /></div>
     <div style="margin-top:8px"><input id="r-pass" placeholder="password" type="password" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit" /></div>
-    <div style="margin-top:8px"><input id="r-code" placeholder="verification code (dev)" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit" /></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="r-close" class="btn ghost">Close</button><button id="r-register" class="btn">Register</button></div>
-    <pre id="r-res" class="tiny muted" style="margin-top:8px"></pre>`;
-    backdrop.appendChild(box); root.appendChild(backdrop);
-    box.querySelector('#r-close').onclick = ()=> root.innerHTML='';
-    box.querySelector('#r-register').onclick = async ()=>{
-      const email = box.querySelector('#r-email').value.trim();
-      const pw = box.querySelector('#r-pass').value;
-      const code = box.querySelector('#r-code').value.trim();
-      if(!email||!pw||!code) return alert('Email, password & code required (dev)');
-      try {
-        const res = await fetch(API_BASE + '/api/auth/register', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password: pw, verification_code: code })});
-        const j = await res.json();
-        box.querySelector('#r-res').textContent = JSON.stringify(j,null,2);
-        if(res.ok && j.token){ setToken(j.token); root.innerHTML=''; alert('Registered'); }
-      } catch(e){ box.querySelector('#r-res').textContent = 'Register failed'; }
-    };
-  }
+    <pre id="r-res" class="tiny muted" style="margin-top:8px"></pre>`; backdrop.appendChild(box); root.appendChild(backdrop); box.querySelector('#r-close').onclick = ()=> root.innerHTML = ''; box.querySelector('#r-register').onclick = async ()=>{ const email = box.querySelector('#r-email').value.trim(); const pw = box.querySelector('#r-pass').value; if(!email||!pw) return alert('Email & password required'); try { const res = await fetch(API_BASE + '/api/auth/register', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password: pw })}); const j = await res.json(); box.querySelector('#r-res').textContent = JSON.stringify(j,null,2); if(res.ok && j.token){ setToken(j.token); root.innerHTML=''; alert('Registered'); const info = el('#acct-info'); if(info) info.innerHTML = `<div style="font-size:13px">Signed in as <strong>${escapeHtml(parseJwt(j.token)?.email||'User')}</strong></div>`; } } catch(e){ box.querySelector('#r-res').textContent = 'Register failed'; } }; }
 }
 
-/* header refresh */
-function refreshHeader(){
-  const elSigned = document.getElementById('signed-as');
-  if(state.token && state.user && state.user.email) elSigned.textContent = 'Signed in: ' + state.user.email;
-  else elSigned.textContent = 'Not signed in';
-}
+/* refresh header/account info */
+function refreshHeader(){ const elSigned = document.getElementById('signed-as'); if(state.token && state.user && state.user.email) elSigned.textContent = 'Signed in: ' + state.user.email; else elSigned.textContent = 'Not signed in'; const info = el('#acct-info'); if(info){ if(state.token && state.user) info.innerHTML = `<div style="font-size:13px">Signed in as <strong>${escapeHtml(state.user.email||state.user?.payload?.email||'User')}</strong></div><div style="margin-top:8px"><button class="btn ghost" onclick="setToken(null);">Logout</button></div>`; else info.innerHTML = ''; } }
 
 /* Startup */
-(async function init(){
-  await loadProducts();
-  loadCart();
-  renderCart();
-  refreshHeader();
-})();
+(async function init(){ await loadProducts(); loadCart(); renderCart(); refreshHeader(); })();
 
 /* save cart on unload */
 window.addEventListener('beforeunload', ()=> { try { localStorage.setItem('nj_cart', JSON.stringify(state.cart)); } catch(e){} });
