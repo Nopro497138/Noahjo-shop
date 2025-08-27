@@ -151,7 +151,7 @@
   <div id="cart-drawer" class="drawer" aria-hidden="true"></div>
 
   <script>
-  // ---------- CONFIG / SEED (edit here to add product photos directly in code) ----------
+  // ---------- CONFIG / SEED ----------
   const SEED_PRODUCTS = [
     { id: 'prod-1', title: 'Nebula Headset', category: 'Accessories', price: 79.99, short_desc: 'Wireless headset with spatial audio and nebula lighting.', long_desc: 'Immersive over-ear headset built for long sessions. 50mm drivers, low-latency wireless mode, breathable cushions and nebula RGB.', images: ['/images/headset-1.jpg','/images/headset-2.jpg'] },
     { id: 'prod-2', title: 'Void Runner Hoodie', category: 'Apparel', price: 49.99, short_desc: 'Comfort-fit hoodie with glow-in-dark print.', long_desc: 'Premium cotton-blend hoodie with reflective galaxy print.', images: ['/images/hoodie-1.jpg'] },
@@ -159,9 +159,9 @@
     { id: 'prod-4', title: 'Cosmo Lamp', category: 'Gear', price: 34.99, short_desc: 'Ambient lamp projecting soft galaxy patterns.', long_desc: 'USB-C powered lamp with multiple brightness modes.', images: ['/images/lamp-1.jpg'] }
   ];
 
-  // use backend API when available; registration requires API
+  // Backend config: set window.API_BASE before loading page if backend is remote
   const API_BASE = (window.API_BASE || location.origin).replace(/\/$/, '');
-  const USE_API = true;
+  const USE_API = true; // flip to false to run purely local demo
 
   const TOKEN_KEY = 'nj_token';
   let state = { token: localStorage.getItem(TOKEN_KEY) || null, user: null, products: [], cart: [] };
@@ -178,13 +178,14 @@
 
   function showInlineMsg(text, timeout=6000){ const elMsg = el('#checkout-msg'); if(!elMsg) return; elMsg.style.display = 'block'; elMsg.textContent = text; if(timeout) setTimeout(()=>{ elMsg.style.display = 'none'; }, timeout); }
 
-  // ---------- PRODUCTS: try API, otherwise fallback to seed ----------
-  async function loadProducts(){ const root = el('#products-root'); root.innerHTML = '<div class="tiny">Loading…</div>'; if(USE_API){ try{ const res = await fetch(API_BASE + '/api/products'); if(res.ok){ const data = await res.json(); state.products = data.length ? data : SEED_PRODUCTS.slice(); renderCategories(); renderProductCards(); return; } }catch(e){ /* fall back silently */ } }
+  // ---------- PRODUCTS ----------
+  async function loadProducts(){ const root = el('#products-root'); root.innerHTML = '<div class="tiny">Loading…</div>'; if(USE_API){ try{ const res = await fetch(API_BASE + '/api/products'); if(res.ok){ const data = await res.json(); state.products = (Array.isArray(data) && data.length) ? data : SEED_PRODUCTS.slice(); renderCategories(); renderProductCards(); return; } }catch(e){ /* silent fallback to seed */ } }
     state.products = SEED_PRODUCTS.slice(); renderCategories(); renderProductCards(); }
 
   function renderCategories(){ const root = el('#categories'); root.innerHTML = ''; const cats = Array.from(new Set(state.products.map(p=>p.category||'Other'))).filter(Boolean).sort(); const all = document.createElement('button'); all.className='pill active'; all.textContent='All'; all.onclick = ()=>{ document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active')); all.classList.add('active'); renderProductCards(); }; root.appendChild(all); for(const c of cats){ const b=document.createElement('button'); b.className='pill'; b.textContent=c; b.onclick = ()=>{ document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderProductCards(); }; root.appendChild(b); } }
 
-  function renderProductCards(){ const root = el('#products-root'); root.innerHTML=''; const q = (el('#search').value||'').trim().toLowerCase(); let activeCat=null; document.querySelectorAll('.pill').forEach(p=>{ if(p.classList.contains('active') && p.textContent!=='All') activeCat=p.textContent; }); const filtered = state.products.filter(p=>{ if(activeCat && activeCat!=='All' && (p.category||'') !== activeCat) return false; if(!q) return true; return p.title.toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q) || (p.short_desc||'').toLowerCase().includes(q); }); if(filtered.length===0){ root.innerHTML = '<div class="tiny">No products found.</div>'; return; } for(const p of filtered){ const card = document.createElement('div'); card.className='product-card'; const img=(p.images&&p.images[0])?p.images[0]:'/images/headset-1.jpg'; card.innerHTML = `
+  function renderProductCards(){ const root = el('#products-root'); root.innerHTML=''; const q = (el('#search').value||'').trim().toLowerCase(); let activeCat=null; document.querySelectorAll('.pill').forEach(p=>{ if(p.classList.contains('active') && p.textContent!=='All') activeCat=p.textContent; }); const filtered = state.products.filter(p=>{ if(activeCat && activeCat!=='All' && (p.category||'') !== activeCat) return false; if(!q) return true; return p.title.toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q) || (p.short_desc||'').toLowerCase().includes(q); }); if(filtered.length===0){ root.innerHTML = '<div class="tiny">No products found.</div>'; return; }
+    for(const p of filtered){ const card = document.createElement('div'); card.className='product-card'; const img=(p.images&&p.images[0])?p.images[0]:'/images/headset-1.jpg'; card.innerHTML = `
       <div style="height:160px;overflow:hidden;background:#020617"><img class="product-media" src="${escapeHtml(img)}" alt="${escapeHtml(p.title)}" /></div>
       <div class="product-body">
         <div class="meta">
@@ -194,18 +195,21 @@
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
           <div class="price">${formatPrice(p.price)}</div>
           <div style="display:flex;gap:8px">
-            <button class="ghost" data-open="${p.id}">Open</button>
-            <button data-add="${p.id}">Add</button>
+            <button class="ghost">Open</button>
+            <button>Add</button>
           </div>
         </div>
-      </div>`; root.appendChild(card);
-  }
-  // attach delegated handlers for the new cards
-  root.querySelectorAll('[data-open]').forEach(btn=> btn.addEventListener('click', (e)=>{ e.stopPropagation(); openProduct(btn.getAttribute('data-open')); }));
-  root.querySelectorAll('[data-add]').forEach(btn=> btn.addEventListener('click', (e)=>{ e.stopPropagation(); addToCart(btn.getAttribute('data-add'),1); }));
+      </div>`;
+      // attach handlers directly
+      const openBtn = card.querySelector('button.ghost'); const addBtn = card.querySelectorAll('button')[1];
+      openBtn.addEventListener('click', (e)=>{ e.stopPropagation(); openProduct(p.id); });
+      addBtn.addEventListener('click', (e)=>{ e.stopPropagation(); addToCart(p.id,1); });
+      card.addEventListener('click', ()=> openProduct(p.id));
+      root.appendChild(card);
+    }
   }
 
-  // --- product modal (carousel + reviews) ---
+  // ---------- PRODUCT DETAIL (modal) ----------
   function openProduct(id){ const p = state.products.find(x=>x.id===id); if(!p) return; const root = el('#modal-root'); root.innerHTML = ''; const backdrop = document.createElement('div'); backdrop.className='modal-backdrop'; const modal = document.createElement('div'); modal.className='modal'; const imgs = (p.images&&p.images.length)?p.images:['/images/headset-1.jpg']; modal.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center"><div><h2 style="margin:0">${escapeHtml(p.title)}</h2><div class="tiny">${escapeHtml(p.category||'')}</div></div><div style="display:flex;gap:8px;align-items:center"><div style="font-weight:800">${formatPrice(p.price)}</div><button class="ghost" id="close-detail">Close</button></div></div>
     <div style="margin-top:12px;display:grid;grid-template-columns:1fr 360px;gap:12px"> <div> <div class="carousel" id="carousel-root"><button class="arrow left" id="c-left" style="display:none">‹</button><img id="c-img" src="${escapeHtml(imgs[0])}" alt="${escapeHtml(p.title)}" /><button class="arrow right" id="c-right" style="display:none">›</button><div class="dots" id="c-dots"></div></div><div class="tabbar"><button id="tab-details" class="active">Details</button><button id="tab-reviews">Reviews</button></div></div>
@@ -219,16 +223,16 @@
     right.onclick = e=>{ e.stopPropagation(); idx=(idx+1)%imgs.length; updateCarousel(); }
     updateCarousel();
 
-    // tabs
+    // tabs + reviews
     const tabD = modal.querySelector('#tab-details'); const tabR = modal.querySelector('#tab-reviews'); const detPane = modal.querySelector('#details-pane'); const revPane = modal.querySelector('#reviews-pane'); tabD.onclick = ()=>{ tabD.classList.add('active'); tabR.classList.remove('active'); detPane.style.display='block'; revPane.style.display='none'; }
     tabR.onclick = async ()=>{ tabR.classList.add('active'); tabD.classList.remove('active'); detPane.style.display='none'; revPane.style.display='block'; await loadReviews(p.id); }
 
     async function loadReviews(productId){ const list = modal.querySelector('#reviews-list'); list.innerHTML = '<div class="tiny">Loading…</div>';
-      if(USE_API){ try{ const res = await fetch(API_BASE + '/api/products/' + encodeURIComponent(productId) + '/reviews'); if(res.ok){ const rows = await res.json(); renderRows(rows); return; } }catch(e){ /* fallback silently */ } }
+      if(USE_API){ try{ const res = await fetch(API_BASE + '/api/products/' + encodeURIComponent(productId) + '/reviews'); if(res.ok){ const rows = await res.json(); renderRows(rows); return; } }catch(e){ /* fallback */ } }
       const local = JSON.parse(localStorage.getItem('nj_reviews_' + productId) || '[]'); renderRows(local);
       function renderRows(rows){ list.innerHTML=''; if(!rows || rows.length===0) list.innerHTML = '<div class="tiny">No reviews yet</div>'; else{ rows.forEach(r=>{ const block = document.createElement('div'); block.className='review'; block.innerHTML = `<div style="display:flex;justify-content:space-between;font-weight:700;color:var(--muted)"><div>${escapeHtml(r.author_email||r.author||'User')}</div><div>${r.rating}★</div></div><div style="margin-top:8px">${escapeHtml(r.text||'')}</div>`; if(r._canDelete){ const btn = document.createElement('button'); btn.className='ghost'; btn.style.marginTop='8px'; btn.textContent='Delete'; btn.onclick = ()=>{ if(!confirm('Delete review?')) return; deleteReviewLocal(productId, r._localId || r.id); loadReviews(productId); }; block.appendChild(btn); } list.appendChild(block); }); } }
 
-      const form = modal.querySelector('#review-form'); if(state.token){ form.innerHTML = `<label class="tiny">Rating (1-5)</label><input id="modal-rev-rating" type="number" min="1" max="5" value="5" style="width:100%;margin-top:6px" /><label class="tiny" style="margin-top:8px">Review</label><textarea id="modal-rev-text" rows="3" style="width:100%;margin-top:6px"></textarea><div style="margin-top:8px"><button id="modal-post-rev">Post review</button></div><pre id="modal-rev-res" class="tiny" style="margin-top:6px"></pre>`; modal.querySelector('#modal-post-rev').onclick = async ()=>{ const rating = Number(modal.querySelector('#modal-rev-rating').value||5); const text = modal.querySelector('#modal-rev-text').value||''; try{ const r = await fetch(API_BASE + '/api/products/' + encodeURIComponent(productId) + '/reviews', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ rating, text }) }); const j = await r.json(); if(!r.ok) throw new Error(j.error||'Failed'); modal.querySelector('#modal-rev-res').textContent = 'Posted'; await loadReviews(productId); }catch(err){ modal.querySelector('#modal-rev-res').textContent = 'Error: ' + (err.message||err); } }; } else { form.innerHTML = '<div class="tiny">Login to post reviews.</div>'; }
+      const form = modal.querySelector('#review-form'); if(state.token){ form.innerHTML = `<label class="tiny">Rating (1-5)</label><input id="modal-rev-rating" type="number" min="1" max="5" value="5" style="width:100%;margin-top:6px" /><label class="tiny" style="margin-top:8px">Review</label><textarea id="modal-rev-text" rows="3" style="width:100%;margin-top:6px"></textarea><div style="margin-top:8px"><button id="modal-post-rev">Post review</button></div><pre id="modal-rev-res" class="tiny" style="margin-top:6px"></pre>`; modal.querySelector('#modal-post-rev').onclick = async ()=>{ const rating = Number(modal.querySelector('#modal-rev-rating').value||5); const text = modal.querySelector('#modal-rev-text').value||''; try{ const r = await fetch(API_BASE + '/api/products/' + encodeURIComponent(productId) + '/reviews', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ rating, text }) }); const j = await r.json(); if(!r.ok) throw new Error(j && j.error ? j.error : 'Failed'); modal.querySelector('#modal-rev-res').textContent = 'Posted'; await loadReviews(productId); }catch(err){ modal.querySelector('#modal-rev-res').textContent = 'Error: ' + (err.message||err); } }; } else { form.innerHTML = '<div class="tiny">Login to post reviews.</div>'; }
     }
 
     modal.querySelector('#add-to-cart-detail').onclick = ()=>{ addToCart(p.id,1); showInlineMsg('Added to cart'); };
@@ -256,14 +260,13 @@
   // --- drawer UI ---
   function openDrawer(){ const d = document.getElementById('cart-drawer'); if(!d) return; d.classList.add('open'); d.setAttribute('aria-hidden','false'); renderDrawer(); }
   function closeDrawer(){ const d = document.getElementById('cart-drawer'); if(!d) return; d.classList.remove('open'); d.setAttribute('aria-hidden','true'); }
-  function renderDrawer(){ const d = document.getElementById('cart-drawer'); d.innerHTML = '';
-    const header = document.createElement('div'); header.style.padding='16px'; header.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">Your Cart</h3><button id="drawer-close" class="ghost">Close</button></div>`; d.appendChild(header);
+  function renderDrawer(){ const d = document.getElementById('cart-drawer'); d.innerHTML = ''; const header = document.createElement('div'); header.style.padding='16px'; header.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">Your Cart</h3><button id="drawer-close" class="ghost">Close</button></div>`; d.appendChild(header);
     const body = document.createElement('div'); body.style.padding='16px'; body.style.maxHeight='calc(100% - 220px)'; body.style.overflow='auto'; if(state.cart.length===0){ body.innerHTML = '<div class="tiny">Your cart is empty.</div>'; } else { const box = document.createElement('div'); box.style.display='grid'; box.style.gap='12px'; state.cart.forEach(item=>{ const row = document.createElement('div'); row.className='card'; row.style.display='flex'; row.style.alignItems='center'; row.style.justifyContent='space-between'; row.innerHTML = `<div style="display:flex;gap:12px;align-items:center"><div style="width:48px;height:48px;border-radius:8px;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));display:grid;place-items:center;font-weight:700">${escapeHtml(item.title.split(' ')[0].slice(0,2))}</div><div><div style="font-weight:700">${escapeHtml(item.title)}</div><div class="tiny">${formatPrice(item.price)}</div></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><input type="number" min="1" value="${item.qty}" data-qty="${item.id}" style="width:64px;border-radius:8px;padding:6px;text-align:center;color:#000"/><button class="ghost" data-remove="${item.id}">Remove</button></div>`; box.appendChild(row); }); body.appendChild(box); }
     d.appendChild(body);
     const footer = document.createElement('div'); footer.style.padding='16px'; footer.innerHTML = `<div style="border-top:1px solid rgba(255,255,255,0.04);padding-top:12px"><div style="display:flex;justify-content:space-between;align-items:center"><div class="tiny">Subtotal</div><div style="font-weight:800">${formatPrice(state.cart.reduce((s,i)=>s+i.price*i.qty,0)||0)}</div></div><div style="margin-top:12px;display:flex;gap:8px"><button id="drawer-checkout" style="flex:1">Checkout</button><button id="drawer-clear" class="ghost">Clear</button></div></div>`; d.appendChild(footer);
 
     // wire up drawer buttons
-    d.querySelectorAll('[data-qty]').forEach(inp=> inp.addEventListener('change', ()=>{ const id = inp.getAttribute('data-qty'); const v = Math.max(1, Number(inp.value||1)); changeQty(id, v - (state.cart.find(x=>x.id===id)||{}).qty); }));
+    d.querySelectorAll('[data-qty]').forEach(inp=> inp.addEventListener('change', ()=>{ const id = inp.getAttribute('data-qty'); const v = Math.max(1, Number(inp.value||1)); const curr = (state.cart.find(x=>x.id===id)||{}).qty || 0; changeQty(id, v - curr); renderDrawer(); }));
     d.querySelectorAll('[data-remove]').forEach(b=> b.addEventListener('click', ()=>{ state.cart = state.cart.filter(x=>x.id!==b.getAttribute('data-remove')); saveCart(); renderDrawer(); }));
     d.querySelector('#drawer-close').onclick = ()=> closeDrawer();
     d.querySelector('#drawer-clear').onclick = ()=>{ state.cart = []; saveCart(); renderDrawer(); };
@@ -271,7 +274,7 @@
   }
 
   // --- checkout (Stripe) ---
-  async function checkout(){ if(state.cart.length===0){ showInlineMsg('Your cart is empty — add items before checkout.'); return; } if(!state.token){ showInlineMsg('Please log in to proceed to checkout.'); openModal('login'); return; } const items = state.cart.map(i=>({ id:i.id, title:i.title, price:i.price, qty:i.qty })); el('#checkout-msg').textContent = 'Creating checkout session...'; el('#checkout-msg').style.display = 'block'; if(USE_API){ try{ const res = await fetch(API_BASE + '/api/create-checkout-session', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ items }) }); const j = await res.json(); if(!res.ok) throw new Error(j.error||'Failed'); if(j.url){ window.location.href = j.url; } else { showInlineMsg('No checkout URL returned from server.'); } }catch(err){ showInlineMsg('Checkout error: ' + (err.message||err)); } } else { showInlineMsg('Checkout requires backend. Enable server to complete payment.'); } }
+  async function checkout(){ if(state.cart.length===0){ showInlineMsg('Your cart is empty — add items before checkout.'); return; } if(!state.token){ showInlineMsg('Please log in to proceed to checkout.'); openModal('login'); return; } const items = state.cart.map(i=>({ id:i.id, title:i.title, price:i.price, qty:i.qty })); el('#checkout-msg').textContent = 'Creating checkout session...'; el('#checkout-msg').style.display = 'block'; if(USE_API){ try{ const res = await fetch(API_BASE + '/api/create-checkout-session', { method:'POST', headers: Object.assign({}, jsonHeaders(), authHeader()), body: JSON.stringify({ items }) }); const j = await res.json(); if(!res.ok) throw new Error(j && j.error ? j.error : 'Failed'); if(j.url){ window.location.href = j.url; } else { showInlineMsg('No checkout URL returned from server.'); } }catch(err){ showInlineMsg('Checkout error: ' + (err.message||err)); } } else { showInlineMsg('Checkout requires backend. Enable server to complete payment.'); } }
 
   // --- auth API wrappers ---
   async function apiRegister(email,password,code){ if(!USE_API) return { ok:false, error:'Enable server to register' }; try{ const res = await fetch(API_BASE + '/api/auth/register', { method:'POST', headers: jsonHeaders(), body: JSON.stringify({ email, password, verification_code: code }) }); const j = await res.json(); if(!res.ok) return { ok:false, error: j && j.error ? j.error : 'Register failed' }; return { ok:true, token: j.token }; }catch(e){ return { ok:false, error:'Network error: unable to reach ' + API_BASE }; } }
@@ -283,7 +286,8 @@
 
     function renderCodeEntry(email,password){ box.innerHTML = `<h3>Enter verification code</h3><div style="margin-top:8px">We've sent a code to <strong>${escapeHtml(email)}</strong>. Check your inbox (and spam).</div><div style="margin-top:8px"><input id="confirm-code" placeholder="Enter verification code" /></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="code-cancel" class="ghost">Cancel</button><button id="code-confirm">Confirm & Register</button></div><pre id="code-res" class="tiny" style="margin-top:8px"></pre>`;
       box.querySelector('#code-cancel').onclick = ()=> root.innerHTML = '';
-      box.querySelector('#code-confirm').onclick = async ()=>{ const code = box.querySelector('#confirm-code').value.trim(); if(!code){ box.querySelector('#code-res').textContent = 'Enter the code you received'; return; } box.querySelector('#code-res').textContent = 'Registering...'; const res = await apiRegister(email,password,code); if(!res.ok){ box.querySelector('#code-res').textContent = res.error; } else { setToken(res.token); root.innerHTML = ''; showInlineMsg('Registered and logged in'); } } }
+      box.querySelector('#code-confirm').onclick = async ()=>{ const code = box.querySelector('#confirm-code').value.trim(); if(!code){ box.querySelector('#code-res').textContent = 'Enter the code you received'; return; } box.querySelector('#code-res').textContent = 'Registering...'; const res = await apiRegister(email,password,code); if(!res.ok){ box.querySelector('#code-res').textContent = res.error; } else { setToken(res.token); root.innerHTML = ''; showInlineMsg('Registered and logged in'); } }
+    }
 
     if(mode === 'login'){
       box.innerHTML = `<h3>Login</h3><div style="margin-top:10px"><input id="m-email" placeholder="email" /></div><div style="margin-top:8px"><input id="m-pass" placeholder="password" type="password" /></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="m-close" class="ghost">Close</button><button id="m-login">Login</button></div><pre id="m-res" class="tiny" style="margin-top:8px"></pre>`;
@@ -294,14 +298,13 @@
       box.innerHTML = `<h3>Register</h3><div style="margin-top:10px"><input id="r-email" placeholder="email" /></div><div style="margin-top:8px"><input id="r-pass" placeholder="password" type="password" /></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button id="r-close" class="ghost">Close</button><button id="r-send-code">Send code</button></div><pre id="r-res" class="tiny" style="margin-top:8px"></pre>`;
       backdrop.appendChild(box); root.appendChild(backdrop);
       box.querySelector('#r-close').onclick = ()=> root.innerHTML = '';
-      box.querySelector('#r-send-code').onclick = async ()=>{ const email = box.querySelector('#r-email').value.trim(); const pw = box.querySelector('#r-pass').value; if(!email || !pw){ box.querySelector('#r-res').textContent = 'Email and password are required'; return; } box.querySelector('#r-res').textContent = 'Sending verification code...'; const r = await requestVerifyCode(email); if(!r.ok){ box.querySelector('#r-res').textContent = r.error + '
-If your backend is on a different host, set window.API_BASE before loading this page.'; } else { renderCodeEntry(email,pw); } };
+      box.querySelector('#r-send-code').onclick = async ()=>{ const email = box.querySelector('#r-email').value.trim(); const pw = box.querySelector('#r-pass').value; if(!email || !pw){ box.querySelector('#r-res').textContent = 'Email and password are required'; return; } box.querySelector('#r-res').textContent = 'Sending verification code...'; const r = await requestVerifyCode(email); if(!r.ok){ box.querySelector('#r-res').textContent = r.error + ' — If your backend is on a different host, set window.API_BASE before loading this page.'; } else { renderCodeEntry(email,pw); } };
     }
 
     backdrop.addEventListener('click', ev=>{ if(ev.target===backdrop) root.innerHTML = ''; });
   }
 
-  // --- post-checkout handler & chat fallback (localStorage) ---
+  // --- post-checkout handler & local chat fallback ---
   async function handleCheckoutReturn(){ try{ const url = new URL(location.href); const s = url.searchParams.get('checkout_success'); const session_id = url.searchParams.get('session_id'); if(s && session_id){ if(USE_API){ try{ const res = await fetch(API_BASE + '/api/orders/by-session/' + encodeURIComponent(session_id)); if(res.ok){ const order = await res.json(); state.cart = []; saveCart(); openChatModal(order.id, order.user_email || (state.user && state.user.email)); url.searchParams.delete('checkout_success'); url.searchParams.delete('session_id'); history.replaceState({}, document.title, url.toString()); return; } }catch(e){ /* fallback */ } }
         const orders = JSON.parse(localStorage.getItem('nj_demo_orders')||'[]'); const ord = orders.find(o=>o.stripe_session_id===session_id); if(ord){ state.cart=[]; saveCart(); openChatModal(ord.id, ord.user_email); url.searchParams.delete('checkout_success'); url.searchParams.delete('session_id'); history.replaceState({}, document.title, url.toString()); }
     } }catch(e){ console.error(e); } }
@@ -336,4 +339,3 @@ If your backend is on a different host, set window.API_BASE before loading this 
   </script>
 </body>
 </html>
-
